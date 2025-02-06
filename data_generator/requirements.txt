@@ -1,0 +1,10 @@
+numpy
+pandas
+scikit-learn
+natsort
+openml
+ucimlrepo
+umap-learn
+ulca @ git+https://github.com/takanori-fujiwara/ulca
+# phate
+# ccpca @ git+https://github.com/takanori-fujiwara/ccpca#subdirectory=ccpca

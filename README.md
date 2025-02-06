@@ -13,7 +13,10 @@ About
   * **Python implementation of scagnostics** measures described in Wilkinson et al. ["High-Dimensional Visual Analytics: Interactive Exploration Guided by Pairwise Views of Point Distributions."](https://doi.org/10.1109/TVCG.2006.94) IEEE TVCG, 2006.
   * **Class complexity features** modified to support NumPy 2 from [PyMFE](https://pymfe.readthedocs.io/en/latest/index.html) and Lorena et al., ["How Complex Is Your Classification Problem?: A Survey on Measuring Classification Complexity."](https://doi.org/10.1145/3347711) ACM Computing Surveys, 2019.
   
-
+* In addition, data geneation code is availabe
+  * Data downloader from  Sedlmair and Aupetit’s two-class scatterplots, UCI Machine Learning Repository, VisuMap Datasets,  Jeon et al.’s clustering validation datasets, and OpenML datasets.
+  * Scatterplot data (i.e., 2D data) generator from the high-dimensional data using multiple dimensionality reduction methods.
+  * Multiclass scatterplot feature extraction from the binalized scatterplot datasets.
 ******
 
 Requirements
@@ -22,7 +25,7 @@ Requirements
 * Note: Tested on macOS Sonoma.
 ******
 
-Setup
+Setup (multiclass-scatterplot-features)
 -----
 * Install with pip3. Move to the directory of this repository. Then,
 
@@ -30,10 +33,18 @@ Setup
 
 ******
 
-Usage
+Usage (multiclass-scatterplot-features)
 -----
 * Import installed modules from python (e.g., `from multiclass_scatterplot_features import MulticlassScatterFeatures`). See sample.py for examples.
 * Detailed documentations of functions, classes, methods can be found in each corresponding python script as well as `doc/index.html`.
+******
+
+Data Generator
+-----
+* Data generation code is provided in `data_generator`
+* `sample.py` demonstrates an example use.
+* To conviniently install all required packages, run `pip3 intall -r requirements.txt` after moving to `data_generator` directory.
+    * Note: Currently, `phate` and `ccpca` need to be installed manually. Follow the instruction described in `sample.py`.
 ******
 
 ## How to Cite
