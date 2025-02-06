@@ -1,0 +1,53 @@
+multiclass\_scatterplot\_features package
+=========================================
+
+Submodules
+----------
+
+multiclass\_scatterplot\_features.class\_purity module
+------------------------------------------------------
+
+.. automodule:: multiclass_scatterplot_features.class_purity
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+multiclass\_scatterplot\_features.graph module
+----------------------------------------------
+
+.. automodule:: multiclass_scatterplot_features.graph
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+multiclass\_scatterplot\_features.multiclass\_scatterplot\_features\_ module
+----------------------------------------------------------------------------
+
+.. automodule:: multiclass_scatterplot_features.multiclass_scatterplot_features_
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+multiclass\_scatterplot\_features.scagnostics module
+----------------------------------------------------
+
+.. automodule:: multiclass_scatterplot_features.scagnostics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+multiclass\_scatterplot\_features.vis\_class\_separation module
+---------------------------------------------------------------
+
+.. automodule:: multiclass_scatterplot_features.vis_class_separation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: multiclass_scatterplot_features
+   :members:
+   :undoc-members:
+   :show-inheritance:

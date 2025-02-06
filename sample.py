@@ -39,11 +39,13 @@ def plot(
         c.set(linewidth=0)
 
     for i, (X, y) in enumerate(datasets):
-        axs[i + 1].scatter(*X.T, c=y)
+        axs[i + 1].scatter(*X.T, c=y, cmap="tab10", vmin=0, vmax=10)
         axs[i + 1].set_aspect("equal")
         axs[i + 1].set_box_aspect(1)
         axs[i + 1].set_xticks([])
         axs[i + 1].set_yticks([])
+        for spine in axs[i + 1].spines.values():
+            spine.set_edgecolor("#bbbbbb")
 
         measures = np.array(
             [getattr(outputs[i], name) for name in measure_names]
@@ -59,8 +61,8 @@ def plot(
 
 if __name__ == "__main__":
     blobs = make_blobs(centers=2, cluster_std=0.5, random_state=0)
-    moons = make_moons(random_state=0)
-    circles = make_circles(random_state=0)
+    moons = make_moons(noise=0.05, random_state=0)
+    circles = make_circles(noise=0.02, factor=0.7, random_state=0)
 
     outputs = []
     for X, y in [blobs, moons, circles]:

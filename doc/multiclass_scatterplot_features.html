@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>multiclass_scatterplot_features package &#8212; multiclass-scatterplot-features documentation</title>
+  <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+  <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+  <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+  <script src="_static/documentation_options.js?v=5929fcd5"></script>
+  <script src="_static/doctools.js?v=9bcbadda"></script>
+  <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+  <link rel="index" title="Index" href="genindex.html" />
+  <link rel="search" title="Search" href="search.html" />
+  <link rel="prev" title="multiclass-scatterplot-features documentation" href="index.html" />
+
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+
+
+
+
+
+</head>
+
+<body>
+
+
+  <div class="document">
+    <div class="documentwrapper">
+      <div class="bodywrapper">
+
+
+        <div class="body" role="main">
+
+          <section id="multiclass-scatterplot-features-package">
+            <h1>multiclass_scatterplot_features package<a class="headerlink"
+                href="#multiclass-scatterplot-features-package" title="Link to this heading">¶</a></h1>
+            <section id="submodules">
+              <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+            </section>
+            <section id="module-multiclass_scatterplot_features.class_purity">
+              <span id="multiclass-scatterplot-features-class-purity-module"></span>
+              <h2>multiclass_scatterplot_features.class_purity module<a class="headerlink"
+                  href="#module-multiclass_scatterplot_features.class_purity" title="Link to this heading">¶</a></h2>
+              <dl class="py function">
+                <dt class="sig sig-object py" id="multiclass_scatterplot_features.class_purity.class_proportion">
+                  <span class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.class_purity.</span></span><span
+                    class="sig-name descname"><span class="pre">class_proportion</span></span><span
+                    class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                        class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">target_labels</span></span><span class="o"><span class="pre">=</span></span><span
+                      class="default_value"><span class="pre">[1]</span></span></em><span class="sig-paren">)</span><a
+                    class="reference internal"
+                    href="_modules/multiclass_scatterplot_features/class_purity.html#class_proportion"><span
+                      class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                    href="#multiclass_scatterplot_features.class_purity.class_proportion"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>Class Proportion Score implemented based on
+                    - M. Aupetit and M. Sedlmair, “SepMe: 2002 New Visual Separation Measures”. Proc. PacificVis 2016.
+                  </p>
+                  <section id="parameters">
+                    <h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>G: sparse matrix of shape (n_samples, n_samples)</dt>
+                      <dd>
+                        <p>Graph where G[i, j] is assigned an edge that connects i to j, following the output format of
+                          sklearn.neighbors.kneighbors_graph</p>
+                      </dd>
+                      <dt>y: labels (length: n_samples)</dt>
+                      <dd>
+                        <p>Label of each sample</p>
+                      </dd>
+                      <dt>target_labels: list (default: [1])</dt>
+                      <dd>
+                        <p>Target labels used to comput class purity. The default, [1], corresponds to CPT in the SepMe
+                          paper. [0, 1] corresponds to CPA.</p>
+                      </dd>
+                    </dl>
+                  </section>
+                  <section id="returns">
+                    <h3>Returns:<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>score: float</dt>
+                      <dd>
+                        <p>Class purity score.</p>
+                      </dd>
+                    </dl>
+                  </section>
+                </dd>
+              </dl>
+
+            </section>
+            <section id="module-multiclass_scatterplot_features.graph">
+              <span id="multiclass-scatterplot-features-graph-module"></span>
+              <h2>multiclass_scatterplot_features.graph module<a class="headerlink"
+                  href="#module-multiclass_scatterplot_features.graph" title="Link to this heading">¶</a></h2>
+              <dl class="py function">
+                <dt class="sig sig-object py" id="multiclass_scatterplot_features.graph.epsilon_ball_neighbors">
+                  <span class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.graph.</span></span><span
+                    class="sig-name descname"><span class="pre">epsilon_ball_neighbors</span></span><span
+                    class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                        class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">epsilon_ratio</span></span><span class="o"><span class="pre">=</span></span><span
+                      class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span
+                      class="n"><span class="pre">directed</span></span><span class="o"><span
+                        class="pre">=</span></span><span class="default_value"><span
+                        class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal"
+                    href="_modules/multiclass_scatterplot_features/graph.html#epsilon_ball_neighbors"><span
+                      class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                    href="#multiclass_scatterplot_features.graph.epsilon_ball_neighbors"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>epsilon-Ball Graph
+                  <h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+                  <dl class="simple">
+                    <dt>X: {array-like, sparse matrix} of shape (n_samples, n_features)</dt>
+                    <dd>
+                      <p>Training data, where n_samples is the number of samples and n_features is the number of
+                        features.</p>
+                    </dd>
+                    <dt>epsilon_ratio: float (default: 0.1)</dt>
+                    <dd>
+                      <p>Ratio of Epsilon / maximum distance of sample pairs. i.e., epsilon = esplion_ratio * maximum
+                        distance.</p>
+                    </dd>
+                    <dt>directed: bool (default: True)</dt>
+                    <dd>
+                      <p>Whether symmetrize an output graph or not. If False, symmetrize a graph to make it undirected.
+                      </p>
+                    </dd>
+                  </dl>
+                  <section id="id1">
+                    <h3>Returns<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>G: sparse matrix of shape (n_samples, n_samples)</dt>
+                      <dd>
+                        <p>Graph where G[i, j] is assigned an edge that connects i to j, following the output format of
+                          sklearn.neighbors.kneighbors_graph</p>
+                      </dd>
+                    </dl>
+                  </section>
+                </dd>
+              </dl>
+
+              <dl class="py function">
+                <dt class="sig sig-object py" id="multiclass_scatterplot_features.graph.gamma_observable_neighbors">
+                  <span class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.graph.</span></span><span
+                    class="sig-name descname"><span class="pre">gamma_observable_neighbors</span></span><span
+                    class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                        class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span
+                      class="default_value"><span class="pre">0.35</span></span></em>, <em class="sig-param"><span
+                      class="n"><span class="pre">directed</span></span><span class="o"><span
+                        class="pre">=</span></span><span class="default_value"><span
+                        class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal"
+                    href="_modules/multiclass_scatterplot_features/graph.html#gamma_observable_neighbors"><span
+                      class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                    href="#multiclass_scatterplot_features.graph.gamma_observable_neighbors"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>gamma-Observable Neighbor Graph implemented based on
+                    - M. Aupetit et al., “gamma-observable neighbours for vector quantization”. Neural Networks, 2002.
+                  <h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+                  <dl class="simple">
+                    <dt>X: {array-like, sparse matrix} of shape (n_samples, n_features)
+                    <dd>
+                      <p>Training data, where n_samples is the number of samples and n_features is the number of
+                        features.
+                      </p>
+                    </dd>
+                    <dl class="simple">
+                      <dt>gamma: float (default: 0.35)</dt>
+                      <dd>
+                        <p>gamma parameter in a range of [0, 1].</p>
+                      </dd>
+                      <dt>directed: bool (default: True)</dt>
+                      <dd>
+                        <p>Whether symmetrize an output graph or not. If False, symmetrize a graph to make it
+                          undirected.
+                        </p>
+                      </dd>
+                    </dl>
+                    <section id="id2">
+                      <h3>Returns:<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+                      <dl class="simple">
+                        <dt>G: sparse matrix of shape (n_samples, n_samples)</dt>
+                        <dd>
+                          <p>Graph where G[i, j] is assigned an edge that connects i to j, following the output format
+                            of
+                            sklearn.neighbors.kneighbors_graph</p>
+                        </dd>
+                      </dl>
+                    </section>
+                </dd>
+              </dl>
+
+              <dl class="py function">
+                <dt class="sig sig-object py" id="multiclass_scatterplot_features.graph.gong">
+                  <span class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.graph.</span></span><span
+                    class="sig-name descname"><span class="pre">gong</span></span><span class="sig-paren">(</span><em
+                    class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em
+                    class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span
+                        class="pre">=</span></span><span class="default_value"><span
+                        class="pre">0.35</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">directed</span></span><span class="o"><span class="pre">=</span></span><span
+                      class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a
+                    class="headerlink" href="#multiclass_scatterplot_features.graph.gong"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>gamma-Observable Neighbor Graph implemented based on
+                    - M. Aupetit et al., “gamma-observable neighbours for vector quantization”. Neural Networks, 2002.
+                  <h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+                  <dl class="simple">
+                    <dt>X: {array-like, sparse matrix} of shape (n_samples, n_features)</dt>
+                    <dd>
+                      <p>Training data, where n_samples is the number of samples and n_features is the number of
+                        features.</p>
+                    </dd>
+                    <dt>gamma: float (default: 0.35)</dt>
+                    <dd>
+                      <p>gamma parameter in a range of [0, 1].</p>
+                    </dd>
+                    <dt>directed: bool (default: True)</dt>
+                    <dd>
+                      <p>Whether symmetrize an output graph or not. If False, symmetrize a graph to make it undirected.
+                      </p>
+                    </dd>
+                  </dl>
+                  <section id="id3">
+                    <h3>Returns:<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>G: sparse matrix of shape (n_samples, n_samples)</dt>
+                      <dd>
+                        <p>Graph where G[i, j] is assigned an edge that connects i to j, following the output format of
+                          sklearn.neighbors.kneighbors_graph</p>
+                      </dd>
+                    </dl>
+                  </section>
+                </dd>
+              </dl>
+
+              <dl class="py function">
+                <dt class="sig sig-object py" id="multiclass_scatterplot_features.graph.k_nearest_neighbors">
+                  <span class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.graph.</span></span><span
+                    class="sig-name descname"><span class="pre">k_nearest_neighbors</span></span><span
+                    class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                        class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span
+                      class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span
+                      class="n"><span class="pre">directed</span></span><span class="o"><span
+                        class="pre">=</span></span><span class="default_value"><span
+                        class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal"
+                    href="_modules/multiclass_scatterplot_features/graph.html#k_nearest_neighbors"><span
+                      class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                    href="#multiclass_scatterplot_features.graph.k_nearest_neighbors"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>k-Nearest Neighbor Graph
+                  <h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+                  <dl class="simple">
+                    <dt>X: {array-like, sparse matrix} of shape (n_samples, n_features)</dt>
+                    <dd>
+                      <p>Training data, where n_samples is the number of samples and n_features is the number of
+                        features.</p>
+                    </dd>
+                    <dt>k: integer (default: 2)</dt>
+                    <dd>
+                      <p>Number of neighbors</p>
+                    </dd>
+                    <dt>directed: bool (default: True)</dt>
+                    <dd>
+                      <p>Whether symmetrize an output graph or not. If False, symmetrize a graph to make it undirected.
+                      </p>
+                    </dd>
+                  </dl>
+                  <section id="id4">
+                    <h3>Returns<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>G: sparse matrix of shape (n_samples, n_samples)</dt>
+                      <dd>
+                        <p>Graph where G[i, j] is assigned an edge that connects i to j, following the output format of
+                          sklearn.neighbors.kneighbors_graph</p>
+                      </dd>
+                    </dl>
+                  </section>
+                </dd>
+              </dl>
+
+            </section>
+            <section id="module-multiclass_scatterplot_features.multiclass_scatterplot_features_">
+              <span id="multiclass-scatterplot-features-multiclass-scatterplot-features-module"></span>
+              <h2>multiclass_scatterplot_features.multiclass_scatterplot_features_ module<a class="headerlink"
+                  href="#module-multiclass_scatterplot_features.multiclass_scatterplot_features_"
+                  title="Link to this heading">¶</a></h2>
+              <dl class="py class">
+                <dt class="sig sig-object py"
+                  id="multiclass_scatterplot_features.multiclass_scatterplot_features_.MulticlassScatterFeatures">
+                  <em class="property"><span class="pre">class</span><span class="w"> </span></em><span
+                    class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.multiclass_scatterplot_features_.</span></span><span
+                    class="sig-name descname"><span class="pre">MulticlassScatterFeatures</span></span><span
+                    class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                        class="pre">hist_measures_n_repeats</span></span><span class="o"><span
+                        class="pre">=</span></span><span class="default_value"><span
+                        class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal"
+                    href="_modules/multiclass_scatterplot_features/multiclass_scatterplot_features_.html#MulticlassScatterFeatures"><span
+                      class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                    href="#multiclass_scatterplot_features.multiclass_scatterplot_features_.MulticlassScatterFeatures"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>Bases: <code
+                      class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+                  <p>Multi-class Scatterplot Features implemented by following:
+                    - S. S. Bae, T. Fujiwara, C. Tseng, and D. A. Szafir. “Uncovering How Scatterplot Features Skew
+                    Visual Class Separation”. Proc. CHI, 2025.
+                    For features correponding to classification complexity (Sec. 3.2), we rely on the PyMFE’s complexity
+                    implementations (<a class="reference external"
+                      href="https://pymfe.readthedocs.io/en/latest/index.html">https://pymfe.readthedocs.io/en/latest/index.html</a>).
+                  </p>
+                  <section id="id5">
+                    <h3>Parameters:<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>hist_measures_n_repeats: int (default: 10)</dt>
+                      <dd>
+                        <p>How many repeats for drawing samples to compute histogram related measures.</p>
+                      </dd>
+                    </dl>
+                  </section>
+                  <section id="attributes-after-fit">
+                    <h3>Attributes (after fit):<a class="headerlink" href="#attributes-after-fit"
+                        title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt><a href="#id15"><span class="problematic" id="id16">points_</span></a>: numpy array with shape
+                        (n_classes, )</dt>
+                      <dd>
+                        <p>Number of data points (N^points in the paper) for each class. Category: Scale (within-class)
+                        </p>
+                      </dd>
+                      <dt><a href="#id17"><span class="problematic" id="id18">areas_</span></a>: numpy array with shape
+                        (n_classes, )</dt>
+                      <dd>
+                        <p>Alpha-hull area (Area^alpha-hull) for each class. Category: Scale (within-class)</p>
+                      </dd>
+                      <dt><a href="#id19"><span class="problematic" id="id20">densities_</span></a>: numpy array with
+                        shape (n_classes, )</dt>
+                      <dd>
+                        <p>Desity of alpha-hull area (Density^alpha-hull) for each class. Category: Point Distance
+                          (within-class)</p>
+                      </dd>
+                      <dt><a href="#id21"><span class="problematic" id="id22">skews_</span></a>: numpy array with shape
+                        (n_classes, )</dt>
+                      <dd>
+                        <p>Scagnostics’ skewed score (Skew) for each class. Category: Point Distance (within-class)</p>
+                      </dd>
+                      <dt><a href="#id23"><span class="problematic" id="id24">sparses_</span></a>: numpy array with
+                        shape (n_classes, )</dt>
+                      <dd>
+                        <p>Scagnostics’ sparse score (Sparse) for each class. Category: Point Distance (within-class)
+                        </p>
+                      </dd>
+                      <dt><a href="#id25"><span class="problematic" id="id26">clumpinesses_</span></a>: numpy array with
+                        shape (n_classes, )</dt>
+                      <dd>
+                        <p>Scagnostics’ clumpiness score (Clumpiness) for each class. Category: Point Distance
+                          (within-class)</p>
+                      </dd>
+                      <dt><a href="#id27"><span class="problematic" id="id28">outliers_</span></a>: numpy array with
+                        shape (n_classes, )</dt>
+                      <dd>
+                        <p>Scagnostics’ outlier score (Outlier) for each class. Category: Point Distance (within-class)
+                        </p>
+                      </dd>
+                      <dt><a href="#id29"><span class="problematic" id="id30">convexes_</span></a>: numpy array with
+                        shape (n_classes, )</dt>
+                      <dd>
+                        <p>Scagnostics’ convex score (Convex) for each class. Category: Shape (within-class)</p>
+                      </dd>
+                      <dt><a href="#id31"><span class="problematic" id="id32">skinnies_</span></a>: numpy array with
+                        shape (n_classes, )</dt>
+                      <dd>
+                        <p>Scagnostics’ skinny score (Skinny) for each class. Category: Shape (within-class)</p>
+                      </dd>
+                      <dt><a href="#id33"><span class="problematic" id="id34">stringies_</span></a>: numpy array with
+                        shape (n_classes, )</dt>
+                      <dd>
+                        <p>Scagnostics’ stringy score (Stringy) for each class. Category: Shape (within-class)</p>
+                      </dd>
+                      <dt><a href="#id35"><span class="problematic" id="id36">monotonics_</span></a>: numpy array with
+                        shape (n_classes, )</dt>
+                      <dd>
+                        <p>Scagnostics’ monotonic score (Monotonic) for each class. Category: Shape (within-class)</p>
+                      </dd>
+                      <dt><a href="#id37"><span class="problematic" id="id38">data_alpha_centroid_diffs_</span></a>:
+                        numpy array with shape (n_classes, )</dt>
+                      <dd>
+                        <p>Distance between the centroid of data points and the centroid of alpha-hull
+                          (CentroidDiff^alpha-hull) for each class. Category: Position (within-class)</p>
+                      </dd>
+                      <dt><a href="#id39"><span class="problematic" id="id40">data_convex_centroid_diffs_</span></a>:
+                        numpy array with shape (n_classes, )</dt>
+                      <dd>
+                        <p>Distance between the centroid of data points and the centroid of covex-hull
+                          (CentroidDiff^convex) for each class. Category: Position (within-class)</p>
+                      </dd>
+                      <dt><a href="#id41"><span class="problematic" id="id42">kurtosises_</span></a>: numpy array with
+                        shape (n_classes, )</dt>
+                      <dd>
+                        <p>Kurtosis (Kurtosis) for each class. Category: Position (within-class)</p>
+                      </dd>
+                      <dt><a href="#id43"><span class="problematic" id="id44">distribution_overlaps_</span></a>: numpy
+                        array with shape (n_classes, )</dt>
+                      <dd>
+                        <p>Histogram intersection between real data points and points sampled from the corresponding
+                          normal distritbution (DistributionOverlap) for each class. Category: Position (within-class)
+                        </p>
+                      </dd>
+                      <dt><a href="#id45"><span class="problematic" id="id46">distribution_distances_</span></a>: numpy
+                        array with shape (n_classes, )</dt>
+                      <dd>
+                        <p>Hellinger distance between real data points and points sampled from the corresponding normal
+                          distritbution (DistributionDistance) for each class. Category: Position (within-class)</p>
+                      </dd>
+                      <dt><a href="#id47"><span class="problematic" id="id48">points_classes_ratio_</span></a>: float
+                      </dt>
+                      <dd>
+                        <p>Number of points divided by number of classes (Points/Classes). Category: Scale
+                          (between-class)</p>
+                      </dd>
+                      <dt><a href="#id49"><span class="problematic" id="id50">std_point_</span></a>: float</dt>
+                      <dd>
+                        <p>Standard deviation of <a href="#id51"><span class="problematic" id="id52">points_</span></a>
+                          (sigma^N^points). Category: Scale (between-class)</p>
+                      </dd>
+                      <dt><a href="#id53"><span class="problematic" id="id54">std_area_</span></a>: float</dt>
+                      <dd>
+                        <p>Standard deviation of <a href="#id55"><span class="problematic" id="id56">areas_</span></a>
+                          (sigma^Area^alpha-hull).Category: Scale (between-class)</p>
+                      </dd>
+                      <dt><a href="#id57"><span class="problematic" id="id58">std_density_</span></a>: float</dt>
+                      <dd>
+                        <p>Standard deviation of <a href="#id59"><span class="problematic"
+                              id="id60">densities_</span></a> (sigma^Density^alpha-hull). Category: Point Distance
+                          (between-class)</p>
+                      </dd>
+                      <dt><a href="#id61"><span class="problematic" id="id62">std_skew_</span></a>: float</dt>
+                      <dd>
+                        <p>Standard deviation of <a href="#id63"><span class="problematic" id="id64">skews_</span></a>
+                          (sigma^Skewed). Category: Point Distance (between-class)</p>
+                      </dd>
+                      <dt><a href="#id65"><span class="problematic" id="id66">std_sparse_</span></a>: float</dt>
+                      <dd>
+                        <p>Standard deviation of <a href="#id67"><span class="problematic" id="id68">sparses_</span></a>
+                          (sigma^Sparse). Category: Point Distance (between-class)</p>
+                      </dd>
+                      <dt><a href="#id69"><span class="problematic" id="id70">equidistant_</span></a>: float</dt>
+                      <dd>
+                        <p>Equidistant measure (Equidistant). Category: Point Distance (between-class)</p>
+                      </dd>
+                      <dt><a href="#id71"><span class="problematic" id="id72">split_</span></a>: float</dt>
+                      <dd>
+                        <p>Split measure (Split). Category: Point Distance (between-class)</p>
+                      </dd>
+                      <dt><a href="#id73"><span class="problematic" id="id74">std_convex_</span></a>: float</dt>
+                      <dd>
+                        <p>Standard deviation of <a href="#id75"><span class="problematic"
+                              id="id76">convexes_</span></a> (sigma^Convex). Category: Shape (between-class)</p>
+                      </dd>
+                      <dt><a href="#id77"><span class="problematic" id="id78">std_skinny_</span></a>: float</dt>
+                      <dd>
+                        <p>Standard deviation of skinnies (sigma^Skinny). Category: Shape (between-class)</p>
+                      </dd>
+                      <dt><a href="#id79"><span class="problematic" id="id80">std_stringy_</span></a>: float</dt>
+                      <dd>
+                        <p>Standard deviation of <a href="#id81"><span class="problematic"
+                              id="id82">stringies_</span></a> (sigma^Stringy). Category: Shape (between-class)</p>
+                      </dd>
+                      <dt><a href="#id83"><span class="problematic" id="id84">std_monotonic_</span></a>: float</dt>
+                      <dd>
+                        <p>Standard deviation of <a href="#id85"><span class="problematic"
+                              id="id86">monotonics_</span></a> (sigma^Monotonic). Category: Shape (between-class)</p>
+                      </dd>
+                      <dt><a href="#id87"><span class="problematic" id="id88">inner_occlusion_ratio_</span></a>: float
+                      </dt>
+                      <dd>
+                        <p>Inner Occlusion Ratio measure (InnerOcclusionRatio). Category: Position (between-class)</p>
+                      </dd>
+                      <dt><a href="#id89"><span class="problematic" id="id90">inner_occlusion_ratios_</span></a>: numpy
+                        array with shape (n_classes, )</dt>
+                      <dd>
+                        <p>InnerOcclusionRatio_a. <a href="#id91"><span class="problematic"
+                              id="id92">inner_occlusion_ratio_</span></a> is the maximum of <a href="#id93"><span
+                              class="problematic" id="id94">inner_occlusion_ratios_</span></a>.</p>
+                      </dd>
+                      <dt><a href="#id95"><span class="problematic" id="id96">convex_overlap_</span></a>: float</dt>
+                      <dd>
+                        <p>Overlap convex-hull area among classes (Overlap^convex). Category: Position (between-class)
+                        </p>
+                      </dd>
+                      <dt><a href="#id97"><span class="problematic" id="id98">alpha_overlap_</span></a>: float</dt>
+                      <dd>
+                        <p>Overlap alpha-hull area among classes (Overlap^alpha-hull). Category: Position
+                          (between-class)</p>
+                      </dd>
+                      <dt><a href="#id99"><span class="problematic" id="id100">gong_035_dir_cp_t0_</span></a>: float
+                      </dt>
+                      <dd>
+                        <p>GONG 0.35 DIR CPT using Class 0 as a target class (GONG 0.35 DIR CPT)_t0). Category: Position
+                          (between-class)</p>
+                      </dd>
+                      <dt><a href="#id101"><span class="problematic" id="id102">gong_035_dir_cp_t1_</span></a>: float
+                      </dt>
+                      <dd>
+                        <p>GONG 0.35 DIR CPT using Class 1 as a target class (GONG 0.35 DIR CPT)_t1). Category: Position
+                          (between-class)</p>
+                      </dd>
+                      <dt><a href="#id103"><span class="problematic" id="id104">distance_consistency_</span></a>: float
+                      </dt>
+                      <dd>
+                        <p>Distance consistency measure (DSC). Category: Position (between-class)</p>
+                      </dd>
+                      <dt><a href="#id105"><span class="problematic"
+                            id="id106">density_aware_distance_consistency_</span></a>: float</dt>
+                      <dd>
+                        <p>Density-aware distance consistency measure (density-awareDSC). Category: Position
+                          (between-class)</p>
+                      </dd>
+                      <dt><a href="#id107"><span class="problematic" id="id108">density_aware_knng_</span></a>: float
+                      </dt>
+                      <dd>
+                        <p>Density-aware KNNG (density-awareKNNG). Category: Position (between-class)</p>
+                      </dd>
+                      <dt><a href="#id109"><span class="problematic" id="id110">c_f1v_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure F1V (C^F1V). Category: Axis Feature</p>
+                      </dd>
+                      <dt><a href="#id111"><span class="problematic" id="id112">c_f2_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure F2 (C^F2). Category: Axis Feature</p>
+                      </dd>
+                      <dt><a href="#id113"><span class="problematic" id="id114">c_f3_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure F3 (C^F3). Category: Axis Feature</p>
+                      </dd>
+                      <dt><a href="#id115"><span class="problematic" id="id116">c_f4_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure F4 (C^F4). Category: Axis Feature</p>
+                      </dd>
+                      <dt><a href="#id117"><span class="problematic" id="id118">c_l1_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure L1 (C^L1). Category: Linearity Feature</p>
+                      </dd>
+                      <dt><a href="#id119"><span class="problematic" id="id120">c_l2_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure L2 (C^L2). Category: Linearity Feature</p>
+                      </dd>
+                      <dt><a href="#id121"><span class="problematic" id="id122">c_l3_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure L3 (C^L3). Category: Linearity Feature</p>
+                      </dd>
+                      <dt><a href="#id123"><span class="problematic" id="id124">c_n1_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure N1 (C^N1). Category: Neighborhood Feature</p>
+                      </dd>
+                      <dt><a href="#id125"><span class="problematic" id="id126">c_n2_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure N2 (C^N2). Category: Neighborhood Feature</p>
+                      </dd>
+                      <dt><a href="#id127"><span class="problematic" id="id128">c_n3_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure N3 (C^N3). Category: Neighborhood Feature</p>
+                      </dd>
+                      <dt><a href="#id129"><span class="problematic" id="id130">c_n4_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure N4 (C^N4). Category: Neighborhood Feature</p>
+                      </dd>
+                      <dt><a href="#id131"><span class="problematic" id="id132">c_t1_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure T1 (C^T1). Category: Neighborhood Feature</p>
+                      </dd>
+                      <dt><a href="#id133"><span class="problematic" id="id134">c_lsc_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure LSC (C^LSC). Category: Neighborhood Feature</p>
+                      </dd>
+                      <dt><a href="#id135"><span class="problematic" id="id136">c_c1_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure C1 (C^C1). Category: Class Imbalance Feature</p>
+                      </dd>
+                      <dt><a href="#id137"><span class="problematic" id="id138">c_c2_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure C2 (C^C2). Category: Class Imbalance Feature</p>
+                      </dd>
+                      <dt><a href="#id139"><span class="problematic" id="id140">c_cls_coef_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure ClsCoef (C^ClsCoef). Category: Network-based Feature</p>
+                      </dd>
+                      <dt><a href="#id141"><span class="problematic" id="id142">c_density_</span></a>: float</dt>
+                      <dd>
+                        <p>Classification complexity measure Density (C^Density). Category: Network-based Feature</p>
+                      </dd>
+                      <dt><a href="#id143"><span class="problematic" id="id144">c_hub_</span></a>: float</dt>
+                      <dd>
+                        <p>Mean of classification complexity measure Hubs (C^Hubs). Category: Network-based Feature</p>
+                      </dd>
+                      <dt><a href="#id145"><span class="problematic" id="id146">min_point_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id147"><span class="problematic" id="id148">points_</span></a>
+                          (N^points_min)</p>
+                      </dd>
+                      <dt><a href="#id149"><span class="problematic" id="id150">min_area_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id151"><span class="problematic" id="id152">areas_</span></a>
+                          (Area^alpha-hull_min)</p>
+                      </dd>
+                      <dt><a href="#id153"><span class="problematic" id="id154">min_density_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id155"><span class="problematic" id="id156">densities_</span></a>
+                          (Density^alpha-hull_min)</p>
+                      </dd>
+                      <dt><a href="#id157"><span class="problematic" id="id158">min_clumpiness_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id159"><span class="problematic" id="id160">clumpinesses_</span></a>
+                          (Clumpiness_min)</p>
+                      </dd>
+                      <dt><a href="#id161"><span class="problematic" id="id162">min_skew_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id163"><span class="problematic" id="id164">skews_</span></a> (Skeq_min)
+                        </p>
+                      </dd>
+                      <dt><a href="#id165"><span class="problematic" id="id166">min_sparse_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of sparses (Sparse_min)</p>
+                      </dd>
+                      <dt><a href="#id167"><span class="problematic" id="id168">min_outlier_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id169"><span class="problematic" id="id170">outliers_</span></a>
+                          (Outlier_min)</p>
+                      </dd>
+                      <dt><a href="#id171"><span class="problematic" id="id172">min_convex_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id173"><span class="problematic" id="id174">convexes_</span></a>
+                          (Convex_min)</p>
+                      </dd>
+                      <dt><a href="#id175"><span class="problematic" id="id176">min_skinny_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of skinnies (Skinny_min)</p>
+                      </dd>
+                      <dt><a href="#id177"><span class="problematic" id="id178">min_stringy_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id179"><span class="problematic" id="id180">stringies_</span></a>
+                          (Stringy_min)</p>
+                      </dd>
+                      <dt><a href="#id181"><span class="problematic" id="id182">min_monotonic_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of monotonics (Monotonic_min)</p>
+                      </dd>
+                      <dt><a href="#id183"><span class="problematic"
+                            id="id184">min_data_alpha_centroid_diff_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id185"><span class="problematic"
+                              id="id186">data_alpha_centroid_diffs_</span></a> (ConvexDiff^alpha-hull_min)</p>
+                      </dd>
+                      <dt><a href="#id187"><span class="problematic"
+                            id="id188">min_data_convex_centroid_diff_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id189"><span class="problematic"
+                              id="id190">data_convex_centroid_diffs_</span></a> (ConvexDiff^convex_min)</p>
+                      </dd>
+                      <dt><a href="#id191"><span class="problematic" id="id192">min_kurtosis_</span></a>: float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id193"><span class="problematic" id="id194">kurtosises_</span></a>
+                          (Kurtosis_min)</p>
+                      </dd>
+                      <dt><a href="#id195"><span class="problematic" id="id196">min_distribution_overlap_</span></a>:
+                        float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id197"><span class="problematic"
+                              id="id198">distribution_overlaps_</span></a> (DistributionOverlap_min)</p>
+                      </dd>
+                      <dt><a href="#id199"><span class="problematic" id="id200">min_distribution_distance_</span></a>:
+                        float</dt>
+                      <dd>
+                        <p>Minimum of <a href="#id201"><span class="problematic"
+                              id="id202">distribution_distances_</span></a> (DistributionDistance_min)</p>
+                      </dd>
+                      <dt><a href="#id203"><span class="problematic" id="id204">max_point_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id205"><span class="problematic" id="id206">points_</span></a>
+                          (N^points_max)</p>
+                      </dd>
+                      <dt><a href="#id207"><span class="problematic" id="id208">max_area_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id209"><span class="problematic" id="id210">areas_</span></a>
+                          (Area^alpha-hull_max)</p>
+                      </dd>
+                      <dt><a href="#id211"><span class="problematic" id="id212">max_density_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id213"><span class="problematic" id="id214">densities_</span></a>
+                          (Density^alpha-hull_max)</p>
+                      </dd>
+                      <dt><a href="#id215"><span class="problematic" id="id216">max_clumpiness_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id217"><span class="problematic" id="id218">clumpinesses_</span></a>
+                          (Clumpiness_max)</p>
+                      </dd>
+                      <dt><a href="#id219"><span class="problematic" id="id220">max_skew_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id221"><span class="problematic" id="id222">skews_</span></a> (Skeq_max)
+                        </p>
+                      </dd>
+                      <dt><a href="#id223"><span class="problematic" id="id224">max_sparse_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of sparses (Sparse_max)</p>
+                      </dd>
+                      <dt><a href="#id225"><span class="problematic" id="id226">max_outlier_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id227"><span class="problematic" id="id228">outliers_</span></a>
+                          (Outlier_max)</p>
+                      </dd>
+                      <dt><a href="#id229"><span class="problematic" id="id230">max_convex_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id231"><span class="problematic" id="id232">convexes_</span></a>
+                          (Convex_max)</p>
+                      </dd>
+                      <dt><a href="#id233"><span class="problematic" id="id234">max_skinny_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of skinnies (Skinny_max)</p>
+                      </dd>
+                      <dt><a href="#id235"><span class="problematic" id="id236">max_stringy_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id237"><span class="problematic" id="id238">stringies_</span></a>
+                          (Stringy_max)</p>
+                      </dd>
+                      <dt><a href="#id239"><span class="problematic" id="id240">max_monotonic_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of monotonics (Monotonic_max)</p>
+                      </dd>
+                      <dt><a href="#id241"><span class="problematic"
+                            id="id242">max_data_alpha_centroid_diff_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id243"><span class="problematic"
+                              id="id244">data_alpha_centroid_diffs_</span></a> (ConvexDiff^alpha-hull_max)</p>
+                      </dd>
+                      <dt><a href="#id245"><span class="problematic"
+                            id="id246">max_data_convex_centroid_diff_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id247"><span class="problematic"
+                              id="id248">data_convex_centroid_diffs_</span></a> (ConvexDiff^convex_max)</p>
+                      </dd>
+                      <dt><a href="#id249"><span class="problematic" id="id250">max_kurtosis_</span></a>: float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id251"><span class="problematic" id="id252">kurtosises_</span></a>
+                          (Kurtosis_max)</p>
+                      </dd>
+                      <dt><a href="#id253"><span class="problematic" id="id254">max_distribution_overlap_</span></a>:
+                        float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id255"><span class="problematic"
+                              id="id256">distribution_overlaps_</span></a> (DistributionOverlap_max)</p>
+                      </dd>
+                      <dt><a href="#id257"><span class="problematic" id="id258">max_distribution_distance_</span></a>:
+                        float</dt>
+                      <dd>
+                        <p>Maximum of <a href="#id259"><span class="problematic"
+                              id="id260">distribution_distances_</span></a> (DistributionDistance_max)</p>
+                      </dd>
+                    </dl>
+                    <dl class="py method">
+                      <dt class="sig sig-object py"
+                        id="multiclass_scatterplot_features.multiclass_scatterplot_features_.MulticlassScatterFeatures.fit">
+                        <span class="sig-name descname"><span class="pre">fit</span></span><span
+                          class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                              class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span
+                              class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span
+                              class="pre">axis_limits</span></span><span class="o"><span
+                              class="pre">=</span></span><span class="default_value"><span
+                              class="pre">None</span></span></em><span class="sig-paren">)</span><a
+                          class="reference internal"
+                          href="_modules/multiclass_scatterplot_features/multiclass_scatterplot_features_.html#MulticlassScatterFeatures.fit"><span
+                            class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                          href="#multiclass_scatterplot_features.multiclass_scatterplot_features_.MulticlassScatterFeatures.fit"
+                          title="Link to this definition">¶</a>
+                      </dt>
+                      <dd>
+                        <p>Fit the model with X and y.
+                        <h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+                        <dl class="simple">
+                          <dt>X: {array-like, sparse matrix} of shape (n_samples, n_features)</dt>
+                          <dd>
+                            <p>Training data, where n_samples is the number of samples and n_features is the number of
+                              features.</p>
+                          </dd>
+                          <dt>y: array-like of shape (n_samples, )</dt>
+                          <dd>
+                            <p>Class labels.</p>
+                          </dd>
+                          <dt>axis_limits: array-like with shape (2, 2) or None (default: None)</dt>
+                          <dd>
+                            <p>x and y-axes limits. The array row and col correspond to (x, y), (min, max), repectively.
+                              distribution_consistency function assumes X is in ranges of these limits.
+                              If None, [[min of X[0, :], max of X[0, :]], [min of X[1, :], max of X[1, :]] is used.</p>
+                          </dd>
+                        </dl>
+                        <section id="id6">
+                          <h4>Returns:<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
+                          <dl class="simple">
+                            <dt>self: object</dt>
+                            <dd>
+                              <p>Returns the instance itself.</p>
+                            </dd>
+                          </dl>
+                        </section>
+                      </dd>
+                    </dl>
+
+                  </section>
+                </dd>
+              </dl>
+
+            </section>
+            <section id="module-multiclass_scatterplot_features.scagnostics">
+              <span id="multiclass-scatterplot-features-scagnostics-module"></span>
+              <h2>multiclass_scatterplot_features.scagnostics module<a class="headerlink"
+                  href="#module-multiclass_scatterplot_features.scagnostics" title="Link to this heading">¶</a></h2>
+              <dl class="py class">
+                <dt class="sig sig-object py" id="multiclass_scatterplot_features.scagnostics.Scagnostics">
+                  <em class="property"><span class="pre">class</span><span class="w"> </span></em><span
+                    class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.scagnostics.</span></span><span
+                    class="sig-name descname"><span class="pre">Scagnostics</span></span><span
+                    class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                        class="pre">compute_clumpy</span></span><span class="o"><span class="pre">=</span></span><span
+                      class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span
+                      class="n"><span class="pre">compute_striate</span></span><span class="o"><span
+                        class="pre">=</span></span><span class="default_value"><span
+                        class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span
+                      class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a
+                    class="reference internal"
+                    href="_modules/multiclass_scatterplot_features/scagnostics.html#Scagnostics"><span
+                      class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                    href="#multiclass_scatterplot_features.scagnostics.Scagnostics"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>Bases: <code
+                      class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+                  <p>Scagnostics implemented by referring to
+                    - Wilkinson et al., “High-Dimensional Visual Analytics: Interactive Exploration Guided by Pairwise
+                    Views of Point Distributions”. TVCG 2006.</p>
+                  <p>Note: There are issues in the details of the original paper:
+                    1. Although they stated “In our feature calculations, we ignore outliers (except for the outlier
+                    measure)”,
+                    if we build MST with outliers, it influences most of measures (e.g., R implementaiton’s alphashape
+                    and skew use q90 of the MST with outliers).
+                    Wilkinson et al. did not clarify whether we should rebuild MST after removing outliers.
+                    2. The paper’s description of the Runt graph does not follow Struetzle’s. Struetzle said “Break all
+                    MST edges that are as long or longer than e”.
+                    3. R implementaiton of Clumpy provided by Wilkinson does not seem to follow the paper’s equation
+                    (not 100% sure).</p>
+                  <p>1 influences most of scagnostics measures. This implementation first builds MST to detect outliers
+                    and then rebuilds MST after removing outliers.
+                    2 and 3 influence the implementation of Clumpy. But, this implementation follows the R
+                    implementation by Wilkinson.</p>
+                  <section id="id7">
+                    <h3>Parameters:<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>compute_clumpy: bool (default=True)</dt>
+                      <dd>
+                        <p>If True, compute Clumpy measure. Clumpy measure requires more computations than other
+                          measures.</p>
+                      </dd>
+                      <dt>compute_striate: bool (default=True)</dt>
+                      <dd>
+                        <p>If True, compute Striate measure. Striate measure requires more computations than other
+                          measures.</p>
+                      </dd>
+                      <dt>verbose: bool (default=False)</dt>
+                      <dd>
+                        <p>If True, print out completion time for each measure computation.</p>
+                      </dd>
+                    </dl>
+                  </section>
+                  <section id="attributes">
+                    <h3>Attributes:<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>compute_clumpy: bool</dt>
+                      <dd>
+                        <p>Reference to compute_clumpy parameter.</p>
+                      </dd>
+                      <dt>compute_striate: bool</dt>
+                      <dd>
+                        <p>Reference to compute_striate parameter.</p>
+                      </dd>
+                      <dt>verbose: bool</dt>
+                      <dd>
+                        <p>Reference to verbose parameter.</p>
+                      </dd>
+                      <dt><a href="#id261"><span class="problematic" id="id262">outlying_</span></a>: float or None</dt>
+                      <dd>
+                        <p>Outlying measure. Before fitting, None is assigned.</p>
+                      </dd>
+                      <dt><a href="#id263"><span class="problematic" id="id264">skew_</span></a>: float or None</dt>
+                      <dd>
+                        <p>Skew measure. Before fitting, None is assigned.</p>
+                      </dd>
+                      <dt><a href="#id265"><span class="problematic" id="id266">sparse_</span></a>: float or None</dt>
+                      <dd>
+                        <p>Sparse measure. Before fitting, None is assigned.</p>
+                      </dd>
+                      <dt><a href="#id267"><span class="problematic" id="id268">clumpy_</span></a>: float or None</dt>
+                      <dd>
+                        <p>Clumpy measure. Before fitting, None is assigned.</p>
+                      </dd>
+                      <dt><a href="#id269"><span class="problematic" id="id270">striate_</span></a>: float or None</dt>
+                      <dd>
+                        <p>Striate measure. Before fitting, None is assigned.</p>
+                      </dd>
+                      <dt><a href="#id271"><span class="problematic" id="id272">convex_</span></a>: float or None</dt>
+                      <dd>
+                        <p>Convex measure. Before fitting, None is assigned.</p>
+                      </dd>
+                      <dt><a href="#id273"><span class="problematic" id="id274">skinny_</span></a>: float or None</dt>
+                      <dd>
+                        <p>Skinny measure. Before fitting, None is assigned.</p>
+                      </dd>
+                      <dt><a href="#id275"><span class="problematic" id="id276">stringy_</span></a>: float or None</dt>
+                      <dd>
+                        <p>Stringy measure. Before fitting, None is assigned.</p>
+                      </dd>
+                      <dt><a href="#id277"><span class="problematic" id="id278">monotonic_</span></a>: float or None
+                      </dt>
+                      <dd>
+                        <p>Monotonic measure. Before fitting, None is assigned.</p>
+                      </dd>
+                    </dl>
+                    <dl class="py method">
+                      <dt class="sig sig-object py" id="multiclass_scatterplot_features.scagnostics.Scagnostics.clumpy">
+                        <span class="sig-name descname"><span class="pre">clumpy</span></span><span
+                          class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                              class="pre">tree_without_outliers</span></span></em><span class="sig-paren">)</span><a
+                          class="reference internal"
+                          href="_modules/multiclass_scatterplot_features/scagnostics.html#Scagnostics.clumpy"><span
+                            class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                          href="#multiclass_scatterplot_features.scagnostics.Scagnostics.clumpy"
+                          title="Link to this definition">¶</a>
+                      </dt>
+                      <dd></dd>
+                    </dl>
+
+                    <dl class="py method">
+                      <dt class="sig sig-object py" id="multiclass_scatterplot_features.scagnostics.Scagnostics.fit">
+                        <span class="sig-name descname"><span class="pre">fit</span></span><span
+                          class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                              class="pre">X</span></span></em><span class="sig-paren">)</span><a
+                          class="reference internal"
+                          href="_modules/multiclass_scatterplot_features/scagnostics.html#Scagnostics.fit"><span
+                            class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                          href="#multiclass_scatterplot_features.scagnostics.Scagnostics.fit"
+                          title="Link to this definition">¶</a>
+                      </dt>
+                      <dd>
+                        <p>Fit the model with X.
+                        <h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+                        <dl class="simple">
+                          <dt>X: {array-like, sparse matrix} of shape (n_samples, n_features)</dt>
+                          <dd>
+                            <p>Training data, where n_samples is the number of samples and n_features is the number of
+                              features. Currently, n_features is assumed to be n_features=2. The other cases are not
+                              tested.</p>
+                          </dd>
+                        </dl>
+                        <section id="id8">
+                          <h4>Returns:<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
+                          <dl class="simple">
+                            <dt>self: object</dt>
+                            <dd>
+                              <p>Returns the instance itself.</p>
+                            </dd>
+                          </dl>
+                        </section>
+                      </dd>
+                    </dl>
+
+                    <dl class="py method">
+                      <dt class="sig sig-object py"
+                        id="multiclass_scatterplot_features.scagnostics.Scagnostics.striate">
+                        <span class="sig-name descname"><span class="pre">striate</span></span><span
+                          class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                              class="pre">X_without_outliers</span></span></em>, <em class="sig-param"><span
+                            class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span
+                            class="n"><span class="pre">degrees</span></span></em><span class="sig-paren">)</span><a
+                          class="reference internal"
+                          href="_modules/multiclass_scatterplot_features/scagnostics.html#Scagnostics.striate"><span
+                            class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                          href="#multiclass_scatterplot_features.scagnostics.Scagnostics.striate"
+                          title="Link to this definition">¶</a>
+                      </dt>
+                      <dd></dd>
+                    </dl>
+
+                  </section>
+                </dd>
+              </dl>
+
+            </section>
+            <section id="module-multiclass_scatterplot_features.vis_class_separation">
+              <span id="multiclass-scatterplot-features-vis-class-separation-module"></span>
+              <h2>multiclass_scatterplot_features.vis_class_separation module<a class="headerlink"
+                  href="#module-multiclass_scatterplot_features.vis_class_separation" title="Link to this heading">¶</a>
+              </h2>
+              <dl class="py function">
+                <dt class="sig sig-object py"
+                  id="multiclass_scatterplot_features.vis_class_separation.density_aware_distance_consistency">
+                  <span class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.vis_class_separation.</span></span><span
+                    class="sig-name descname"><span class="pre">density_aware_distance_consistency</span></span><span
+                    class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                        class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">summary_measure</span></span><span class="o"><span class="pre">=</span></span><span
+                      class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a
+                    class="reference internal"
+                    href="_modules/multiclass_scatterplot_features/vis_class_separation.html#density_aware_distance_consistency"><span
+                      class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                    href="#multiclass_scatterplot_features.vis_class_separation.density_aware_distance_consistency"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>Density-aware distance concistency (density-aware DSC) implementation based on:
+                    - Wang et al., “A perception-driven approach to supervised dimensionality reduction for
+                    visualization”, TVCG 2018.
+                    Note: This paper’s DSC doesn’t look precisely following the original DSC (i.e., something wrong in
+                    Eq 6).
+                    But, it does not influence on the implmentation of density-aware DSC (i.e., we follow Eq. 9).
+                  <h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+                  <dl class="simple">
+                    <dt>X: {array-like, sparse matrix} of shape (n_samples, n_features)</dt>
+                    <dd>
+                      <p>Training data, where n_samples is the number of samples and n_features is the number of
+                        features.
+                        Curently only supports cases with n_features=2.</p>
+                    </dd>
+                  </dl>
+                  <dl class="simple">
+                    <dt>y: labels (length: n_samples)</dt>
+                    <dd>
+                      <p>Label of each sample.</p>
+                    </dd>
+                    <dt>summary_measure: bool (default: True)</dt>
+                    <dd>
+                      <p>If True, return the mean of all samples’ density-aware DSC. Otherwise, return each sample’s
+                        density-aware DSC</p>
+                    </dd>
+                  </dl>
+                  <section id="id9">
+                    <h3>Returns:<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>score: float or np.array</dt>
+                      <dd>
+                        <p>The mean of all samples’ density-aware DSC if summary_measure is True. Otherwise, each
+                          sample’s density-aware DSC.</p>
+                      </dd>
+                    </dl>
+                  </section>
+                </dd>
+              </dl>
+
+              <dl class="py function">
+                <dt class="sig sig-object py"
+                  id="multiclass_scatterplot_features.vis_class_separation.density_aware_knng">
+                  <span class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.vis_class_separation.</span></span><span
+                    class="sig-name descname"><span class="pre">density_aware_knng</span></span><span
+                    class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                        class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">summary_measure</span></span><span class="o"><span class="pre">=</span></span><span
+                      class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a
+                    class="reference internal"
+                    href="_modules/multiclass_scatterplot_features/vis_class_separation.html#density_aware_knng"><span
+                      class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                    href="#multiclass_scatterplot_features.vis_class_separation.density_aware_knng"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>Density-aware KNNG implementation based on:
+                    - Wang et al., “A perception-driven approach to supervised dimensionality reduction for
+                    visualization”, TVCG 2018.
+                  <h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+                  <dl class="simple">
+                    <dt>X: {array-like, sparse matrix} of shape (n_samples, n_features)</dt>
+                    <dd>
+                      <p>Training data, where n_samples is the number of samples and n_features is the number of
+                        features.
+                        Curently only supports cases with n_features=2.</p>
+                    </dd>
+                  </dl>
+                  <dl class="simple">
+                    <dt>y: labels (length: n_samples)</dt>
+                    <dd>
+                      <p>Label of each sample.</p>
+                    </dd>
+                    <dt>summary_measure: bool (default: True)</dt>
+                    <dd>
+                      <p>If True, return the mean of all samples’ density-aware DSC. Otherwise, return each sample’s
+                        density-aware DSC</p>
+                    </dd>
+                  </dl>
+                  <section id="id10">
+                    <h3>Returns:<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>score: float or np.array</dt>
+                      <dd>
+                        <p>The mean of all samples’ density-aware KNNG if summary_measure is True. Otherwise, each
+                          sample’s density-aware KNNG.</p>
+                      </dd>
+                    </dl>
+                  </section>
+                </dd>
+              </dl>
+
+              <dl class="py function">
+                <dt class="sig sig-object py"
+                  id="multiclass_scatterplot_features.vis_class_separation.distance_consistency">
+                  <span class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.vis_class_separation.</span></span><span
+                    class="sig-name descname"><span class="pre">distance_consistency</span></span><span
+                    class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                        class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal"
+                    href="_modules/multiclass_scatterplot_features/vis_class_separation.html#distance_consistency"><span
+                      class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                    href="#multiclass_scatterplot_features.vis_class_separation.distance_consistency"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>Distance consistency (DSC) implementaiton based on
+                    - Sips et al., “Selecting good views of high-dimensional data using class consistency”, CGF 2009.
+                  </p>
+                  <section id="id11">
+                    <h3>Parameters:<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>X: {array-like, sparse matrix} of shape (n_samples, n_features)</dt>
+                      <dd>
+                        <p>Training data, where n_samples is the number of samples and n_features is the number of
+                          features.</p>
+                      </dd>
+                      <dt>y: labels (length: n_samples)</dt>
+                      <dd>
+                        <p>Label of each sample.</p>
+                      </dd>
+                    </dl>
+                  </section>
+                  <section id="id12">
+                    <h3>Returns:<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>score: float</dt>
+                      <dd>
+                        <p>DSC score.</p>
+                      </dd>
+                    </dl>
+                  </section>
+                </dd>
+              </dl>
+
+              <dl class="py function">
+                <dt class="sig sig-object py"
+                  id="multiclass_scatterplot_features.vis_class_separation.distribution_consistency">
+                  <span class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.vis_class_separation.</span></span><span
+                    class="sig-name descname"><span class="pre">distribution_consistency</span></span><span
+                    class="sig-paren">(</span><em class="sig-param"><span class="n"><span
+                        class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span
+                      class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span
+                      class="n"><span class="pre">resolution</span></span><span class="o"><span
+                        class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>,
+                  <em class="sig-param"><span class="n"><span class="pre">axis_limits</span></span><span class="o"><span
+                        class="pre">=</span></span><span class="default_value"><span
+                        class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal"
+                    href="_modules/multiclass_scatterplot_features/vis_class_separation.html#distribution_consistency"><span
+                      class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                    href="#multiclass_scatterplot_features.vis_class_separation.distribution_consistency"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>Sips et al., “Selecting good views of high-dimensional data using class consistency”, CGF 2009.</p>
+                </dd>
+              </dl>
+
+              <dl class="py function">
+                <dt class="sig sig-object py" id="multiclass_scatterplot_features.vis_class_separation.sepme">
+                  <span class="sig-prename descclassname"><span
+                      class="pre">multiclass_scatterplot_features.vis_class_separation.</span></span><span
+                    class="sig-name descname"><span class="pre">sepme</span></span><span class="sig-paren">(</span><em
+                    class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em
+                    class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em
+                    class="sig-param"><span class="n"><span class="pre">graph_fn=&lt;function</span> <span
+                        class="pre">gamma_observable_neighbors&gt;</span></span></em>, <em class="sig-param"><span
+                      class="n"><span class="pre">class_purity_fn=&lt;function</span> <span
+                        class="pre">class_proportion&gt;</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">graph_fn_kwds={}</span></span></em>, <em class="sig-param"><span class="n"><span
+                        class="pre">class_purity_fn_kwds={}</span></span></em><span class="sig-paren">)</span><a
+                    class="reference internal"
+                    href="_modules/multiclass_scatterplot_features/vis_class_separation.html#sepme"><span
+                      class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink"
+                    href="#multiclass_scatterplot_features.vis_class_separation.sepme"
+                    title="Link to this definition">¶</a>
+                </dt>
+                <dd>
+                  <p>SepMe measures implementation based on:
+                    - Aupetit and Sedlmair, “SepMe: 2002 New Visual Separation Measures”, In Proc. PacificVis, 2016.
+                    With default parameters, this function outputs GONG 0.35 DIR CPT (the average proportion of
+                    same-class neighbors among the 0.35-Observable Neighbors of each point ofthe target class).</p>
+                  <section id="id13">
+                    <h3>Parameters:<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>X: {array-like, sparse matrix} of shape (n_samples, n_features)</dt>
+                      <dd>
+                        <p>Training data, where n_samples is the number of samples and n_features is the number of
+                          features.</p>
+                      </dd>
+                      <dt>y: labels (length: n_samples)</dt>
+                      <dd>
+                        <p>Label of each sample.</p>
+                      </dd>
+                      <dt>graph_fn: function (default: gamma_observable_neighbors)</dt>
+                      <dd>
+                        <p>Function that generates a neighbor graph represented as a sparse matrix of shape (n_samples,
+                          n_samples).
+                          For example, functions prepared in graph.py (gamma_observable_neighbors, k_nearest_neighbors,
+                          epsilon_ball_neighbors)</p>
+                      </dd>
+                      <dt>class_purity_fn: function (default: class_proportion)</dt>
+                      <dd>
+                        <p>Function that computes a class purity score for a given neighbor graph.
+                          class_purity.py currently only provides class_proportion.</p>
+                      </dd>
+                      <dt>graph_fn_kwds: dict (default: {})</dt>
+                      <dd>
+                        <p>Keyword arguments used for graph_fn.</p>
+                      </dd>
+                      <dt>class_purity_fn_kwds: dict (default: {})</dt>
+                      <dd>
+                        <p>Keyword arguments used for class_purity_fn.</p>
+                      </dd>
+                    </dl>
+                  </section>
+                  <section id="id14">
+                    <h3>Returns:<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h3>
+                    <dl class="simple">
+                      <dt>score: float</dt>
+                      <dd>
+                        <p>SepMe score.</p>
+                      </dd>
+                    </dl>
+                  </section>
+                </dd>
+              </dl>
+
+            </section>
+            <section id="module-multiclass_scatterplot_features">
+              <span id="module-contents"></span>
+              <h2>Module contents<a class="headerlink" href="#module-multiclass_scatterplot_features"
+                  title="Link to this heading">¶</a></h2>
+            </section>
+          </section>
+
+
+        </div>
+
+      </div>
+    </div>
+    <div class="sphinxsidebar" role="navigation" aria-label="Main">
+      <div class="sphinxsidebarwrapper">
+        <h1 class="logo"><a href="index.html">multiclass-scatterplot-features</a></h1>
+
+
+
+
+
+
+
+
+
+        <search id="searchbox" style="display: none" role="search">
+          <div class="searchformwrapper">
+            <form class="search" action="search.html" method="get">
+              <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off"
+                autocapitalize="off" spellcheck="false" placeholder="Search" />
+              <input type="submit" value="Go" />
+            </form>
+          </div>
+        </search>
+        <script>document.getElementById('searchbox').style.display = "block"</script>
+        <h3>Navigation</h3>
+        <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+        <ul class="current">
+          <li class="toctree-l1 current"><a class="current reference internal" href="#">multiclass_scatterplot_features
+              package</a>
+            <ul>
+              <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+              <li class="toctree-l2"><a class="reference internal"
+                  href="#module-multiclass_scatterplot_features.class_purity">multiclass_scatterplot_features.class_purity
+                  module</a>
+                <ul>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.class_purity.class_proportion"><code
+                        class="docutils literal notranslate"><span class="pre">class_proportion()</span></code></a></li>
+                </ul>
+              </li>
+              <li class="toctree-l2"><a class="reference internal"
+                  href="#module-multiclass_scatterplot_features.graph">multiclass_scatterplot_features.graph module</a>
+                <ul>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.graph.epsilon_ball_neighbors"><code
+                        class="docutils literal notranslate"><span class="pre">epsilon_ball_neighbors()</span></code></a>
+                  </li>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.graph.gamma_observable_neighbors"><code
+                        class="docutils literal notranslate"><span class="pre">gamma_observable_neighbors()</span></code></a>
+                  </li>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.graph.gong"><code
+                        class="docutils literal notranslate"><span class="pre">gong()</span></code></a></li>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.graph.k_nearest_neighbors"><code
+                        class="docutils literal notranslate"><span class="pre">k_nearest_neighbors()</span></code></a>
+                  </li>
+                </ul>
+              </li>
+              <li class="toctree-l2"><a class="reference internal"
+                  href="#module-multiclass_scatterplot_features.multiclass_scatterplot_features_">multiclass_scatterplot_features.multiclass_scatterplot_features_
+                  module</a>
+                <ul>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.multiclass_scatterplot_features_.MulticlassScatterFeatures"><code
+                        class="docutils literal notranslate"><span class="pre">MulticlassScatterFeatures</span></code></a>
+                    <ul>
+                      <li class="toctree-l4"><a class="reference internal"
+                          href="#multiclass_scatterplot_features.multiclass_scatterplot_features_.MulticlassScatterFeatures.fit"><code
+                            class="docutils literal notranslate"><span class="pre">MulticlassScatterFeatures.fit()</span></code></a>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li class="toctree-l2"><a class="reference internal"
+                  href="#module-multiclass_scatterplot_features.scagnostics">multiclass_scatterplot_features.scagnostics
+                  module</a>
+                <ul>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.scagnostics.Scagnostics"><code
+                        class="docutils literal notranslate"><span class="pre">Scagnostics</span></code></a>
+                    <ul>
+                      <li class="toctree-l4"><a class="reference internal"
+                          href="#multiclass_scatterplot_features.scagnostics.Scagnostics.clumpy"><code
+                            class="docutils literal notranslate"><span class="pre">Scagnostics.clumpy()</span></code></a>
+                      </li>
+                      <li class="toctree-l4"><a class="reference internal"
+                          href="#multiclass_scatterplot_features.scagnostics.Scagnostics.fit"><code
+                            class="docutils literal notranslate"><span class="pre">Scagnostics.fit()</span></code></a>
+                      </li>
+                      <li class="toctree-l4"><a class="reference internal"
+                          href="#multiclass_scatterplot_features.scagnostics.Scagnostics.striate"><code
+                            class="docutils literal notranslate"><span class="pre">Scagnostics.striate()</span></code></a>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li class="toctree-l2"><a class="reference internal"
+                  href="#module-multiclass_scatterplot_features.vis_class_separation">multiclass_scatterplot_features.vis_class_separation
+                  module</a>
+                <ul>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.vis_class_separation.density_aware_distance_consistency"><code
+                        class="docutils literal notranslate"><span class="pre">density_aware_distance_consistency()</span></code></a>
+                  </li>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.vis_class_separation.density_aware_knng"><code
+                        class="docutils literal notranslate"><span class="pre">density_aware_knng()</span></code></a>
+                  </li>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.vis_class_separation.distance_consistency"><code
+                        class="docutils literal notranslate"><span class="pre">distance_consistency()</span></code></a>
+                  </li>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.vis_class_separation.distribution_consistency"><code
+                        class="docutils literal notranslate"><span class="pre">distribution_consistency()</span></code></a>
+                  </li>
+                  <li class="toctree-l3"><a class="reference internal"
+                      href="#multiclass_scatterplot_features.vis_class_separation.sepme"><code
+                        class="docutils literal notranslate"><span class="pre">sepme()</span></code></a></li>
+                </ul>
+              </li>
+              <li class="toctree-l2"><a class="reference internal" href="#module-multiclass_scatterplot_features">Module
+                  contents</a></li>
+            </ul>
+          </li>
+        </ul>
+
+        <div class="relations">
+          <h3>Related Topics</h3>
+          <ul>
+            <li><a href="index.html">Documentation overview</a>
+              <ul>
+                <li>Previous: <a href="index.html" title="previous chapter">multiclass-scatterplot-features
+                    documentation</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+
+
+
+
+
+
+
+      </div>
+    </div>
+    <div class="clearer"></div>
+  </div>
+  <div class="footer">
+    &#169;2025, Author.
+
+    |
+    Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+    &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+
+    |
+    <a href="_sources/multiclass_scatterplot_features.rst.txt" rel="nofollow">Page source</a>
+  </div>
+
+
+
+
+</body>
+
+</html>

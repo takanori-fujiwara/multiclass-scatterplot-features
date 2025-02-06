@@ -1,7 +1,6 @@
-# multiclass-scatterplot-features
-Multiclass scatterplot features from  (CHI 2025)
+# Multiclass Scatterplot Features
 
-## multiclass-scatterplot-features: Multiclass Scatterplot Features
+<img src="images/example.png">
 
 About
 -----
@@ -34,7 +33,7 @@ Setup
 Usage
 -----
 * Import installed modules from python (e.g., `from multiclass_scatterplot_features import MulticlassScatterFeatures`). See sample.py for examples.
-* Detailed documentations of functions, classes, methods can be found in each corresponding python script.
+* Detailed documentations of functions, classes, methods can be found in each corresponding python script as well as `doc/index.html`.
 ******
 
 ## How to Cite

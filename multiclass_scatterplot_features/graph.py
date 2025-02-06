@@ -6,7 +6,8 @@ from sklearn.metrics import pairwise_distances
 
 def gamma_observable_neighbors(X, gamma=0.35, directed=True):
     """gamma-Observable Neighbor Graph implemented based on
-    - M. Aupetit et al., "\gamma-observable neighbours for vector quantization". Neural Networks, 2002.
+    - M. Aupetit et al., "gamma-observable neighbours for vector quantization". Neural Networks, 2002.
+
     Parameters:
     ----------
     X: {array-like, sparse matrix} of shape (n_samples, n_features)
@@ -53,6 +54,7 @@ gong = gamma_observable_neighbors
 
 def k_nearest_neighbors(X, k=2, directed=True):
     """k-Nearest Neighbor Graph
+
     Parameters
     ----------
     X: {array-like, sparse matrix} of shape (n_samples, n_features)
@@ -74,6 +76,7 @@ def k_nearest_neighbors(X, k=2, directed=True):
 
 def epsilon_ball_neighbors(X, epsilon_ratio=0.1, directed=True):
     """epsilon-Ball Graph
+
     Parameters
     ----------
     X: {array-like, sparse matrix} of shape (n_samples, n_features)

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>multiclass_scatterplot_features.multiclass_scatterplot_features_ &#8212; multiclass-scatterplot-features  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for multiclass_scatterplot_features.multiclass_scatterplot_features_</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">norm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse.csgraph</span><span class="w"> </span><span class="kn">import</span> <span class="n">minimum_spanning_tree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">pairwise_distances</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiclass_scatterplot_features.scagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scagnostics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiclass_scatterplot_features.vis_class_separation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">sepme</span><span class="p">,</span>
+    <span class="n">distance_consistency</span><span class="p">,</span>
+    <span class="n">density_aware_distance_consistency</span><span class="p">,</span>
+    <span class="n">density_aware_knng</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymfe.complexity</span><span class="w"> </span><span class="kn">import</span> <span class="n">MFEComplexity</span>
+
+
+<div class="viewcode-block" id="MulticlassScatterFeatures">
+<a class="viewcode-back" href="../../multiclass_scatterplot_features.html#multiclass_scatterplot_features.multiclass_scatterplot_features_.MulticlassScatterFeatures">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MulticlassScatterFeatures</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multi-class Scatterplot Features implemented by following:</span>
+<span class="sd">    - S. S. Bae, T. Fujiwara, C. Tseng, and D. A. Szafir. &quot;Uncovering How Scatterplot Features Skew Visual Class Separation&quot;. Proc. CHI, 2025.</span>
+<span class="sd">    For features correponding to classification complexity (Sec. 3.2), we rely on the PyMFE&#39;s complexity implementations (https://pymfe.readthedocs.io/en/latest/index.html).</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    ----------</span>
+<span class="sd">    hist_measures_n_repeats: int (default: 10)</span>
+<span class="sd">        How many repeats for drawing samples to compute histogram related measures.</span>
+<span class="sd">    Attributes (after fit):</span>
+<span class="sd">    ----------</span>
+<span class="sd">    points_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Number of data points (N^points in the paper) for each class. Category: Scale (within-class)</span>
+<span class="sd">    areas_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Alpha-hull area (Area^alpha-hull) for each class. Category: Scale (within-class)</span>
+<span class="sd">    densities_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Desity of alpha-hull area (Density^alpha-hull) for each class. Category: Point Distance (within-class)</span>
+<span class="sd">    skews_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Scagnostics&#39; skewed score (Skew) for each class. Category: Point Distance (within-class)</span>
+<span class="sd">    sparses_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Scagnostics&#39; sparse score (Sparse) for each class. Category: Point Distance (within-class)</span>
+<span class="sd">    clumpinesses_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Scagnostics&#39; clumpiness score (Clumpiness) for each class. Category: Point Distance (within-class)</span>
+<span class="sd">    outliers_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Scagnostics&#39; outlier score (Outlier) for each class. Category: Point Distance (within-class)</span>
+<span class="sd">    convexes_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Scagnostics&#39; convex score (Convex) for each class. Category: Shape (within-class)</span>
+<span class="sd">    skinnies_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Scagnostics&#39; skinny score (Skinny) for each class. Category: Shape (within-class)</span>
+<span class="sd">    stringies_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Scagnostics&#39; stringy score (Stringy) for each class. Category: Shape (within-class)</span>
+<span class="sd">    monotonics_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Scagnostics&#39; monotonic score (Monotonic) for each class. Category: Shape (within-class)</span>
+<span class="sd">    data_alpha_centroid_diffs_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Distance between the centroid of data points and the centroid of alpha-hull (CentroidDiff^alpha-hull) for each class. Category: Position (within-class)</span>
+<span class="sd">    data_convex_centroid_diffs_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Distance between the centroid of data points and the centroid of covex-hull (CentroidDiff^convex) for each class. Category: Position (within-class)</span>
+<span class="sd">    kurtosises_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Kurtosis (Kurtosis) for each class. Category: Position (within-class)</span>
+<span class="sd">    distribution_overlaps_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Histogram intersection between real data points and points sampled from the corresponding normal distritbution (DistributionOverlap) for each class. Category: Position (within-class)</span>
+<span class="sd">    distribution_distances_: numpy array with shape (n_classes, )</span>
+<span class="sd">        Hellinger distance between real data points and points sampled from the corresponding normal distritbution (DistributionDistance) for each class. Category: Position (within-class)</span>
+<span class="sd">    points_classes_ratio_: float</span>
+<span class="sd">        Number of points divided by number of classes (Points/Classes). Category: Scale (between-class)</span>
+<span class="sd">    std_point_: float</span>
+<span class="sd">        Standard deviation of points_ (sigma^N^points). Category: Scale (between-class)</span>
+<span class="sd">    std_area_: float</span>
+<span class="sd">        Standard deviation of areas_ (sigma^Area^alpha-hull).Category: Scale (between-class)</span>
+<span class="sd">    std_density_: float</span>
+<span class="sd">        Standard deviation of densities_ (sigma^Density^alpha-hull). Category: Point Distance (between-class)</span>
+<span class="sd">    std_skew_: float</span>
+<span class="sd">        Standard deviation of skews_ (sigma^Skewed). Category: Point Distance (between-class)</span>
+<span class="sd">    std_sparse_: float</span>
+<span class="sd">        Standard deviation of sparses_ (sigma^Sparse). Category: Point Distance (between-class)</span>
+<span class="sd">    equidistant_: float</span>
+<span class="sd">        Equidistant measure (Equidistant). Category: Point Distance (between-class)</span>
+<span class="sd">    split_: float</span>
+<span class="sd">        Split measure (Split). Category: Point Distance (between-class)</span>
+<span class="sd">    std_convex_: float</span>
+<span class="sd">        Standard deviation of convexes_ (sigma^Convex). Category: Shape (between-class)</span>
+<span class="sd">    std_skinny_: float</span>
+<span class="sd">        Standard deviation of skinnies (sigma^Skinny). Category: Shape (between-class)</span>
+<span class="sd">    std_stringy_: float</span>
+<span class="sd">        Standard deviation of stringies_ (sigma^Stringy). Category: Shape (between-class)</span>
+<span class="sd">    std_monotonic_: float</span>
+<span class="sd">        Standard deviation of monotonics_ (sigma^Monotonic). Category: Shape (between-class)</span>
+<span class="sd">    inner_occlusion_ratio_: float</span>
+<span class="sd">        Inner Occlusion Ratio measure (InnerOcclusionRatio). Category: Position (between-class)</span>
+<span class="sd">    inner_occlusion_ratios_: numpy array with shape (n_classes, )</span>
+<span class="sd">        InnerOcclusionRatio_a. inner_occlusion_ratio_ is the maximum of inner_occlusion_ratios_.</span>
+<span class="sd">    convex_overlap_: float</span>
+<span class="sd">        Overlap convex-hull area among classes (Overlap^convex). Category: Position (between-class)</span>
+<span class="sd">    alpha_overlap_: float</span>
+<span class="sd">        Overlap alpha-hull area among classes (Overlap^alpha-hull). Category: Position (between-class)</span>
+<span class="sd">    gong_035_dir_cp_t0_: float</span>
+<span class="sd">        GONG 0.35 DIR CPT using Class 0 as a target class (GONG 0.35 DIR CPT)_t0). Category: Position (between-class)</span>
+<span class="sd">    gong_035_dir_cp_t1_: float</span>
+<span class="sd">        GONG 0.35 DIR CPT using Class 1 as a target class (GONG 0.35 DIR CPT)_t1). Category: Position (between-class)</span>
+<span class="sd">    distance_consistency_: float</span>
+<span class="sd">        Distance consistency measure (DSC). Category: Position (between-class)</span>
+<span class="sd">    density_aware_distance_consistency_: float</span>
+<span class="sd">        Density-aware distance consistency measure (density-awareDSC). Category: Position (between-class)</span>
+<span class="sd">    density_aware_knng_: float</span>
+<span class="sd">        Density-aware KNNG (density-awareKNNG). Category: Position (between-class)</span>
+<span class="sd">    c_f1v_: float</span>
+<span class="sd">        Classification complexity measure F1V (C^F1V). Category: Axis Feature</span>
+<span class="sd">    c_f2_: float</span>
+<span class="sd">        Classification complexity measure F2 (C^F2). Category: Axis Feature</span>
+<span class="sd">    c_f3_: float</span>
+<span class="sd">        Classification complexity measure F3 (C^F3). Category: Axis Feature</span>
+<span class="sd">    c_f4_: float</span>
+<span class="sd">        Classification complexity measure F4 (C^F4). Category: Axis Feature</span>
+<span class="sd">    c_l1_: float</span>
+<span class="sd">        Classification complexity measure L1 (C^L1). Category: Linearity Feature</span>
+<span class="sd">    c_l2_: float</span>
+<span class="sd">        Classification complexity measure L2 (C^L2). Category: Linearity Feature</span>
+<span class="sd">    c_l3_: float</span>
+<span class="sd">        Classification complexity measure L3 (C^L3). Category: Linearity Feature</span>
+<span class="sd">    c_n1_: float</span>
+<span class="sd">        Classification complexity measure N1 (C^N1). Category: Neighborhood Feature</span>
+<span class="sd">    c_n2_: float</span>
+<span class="sd">        Classification complexity measure N2 (C^N2). Category: Neighborhood Feature</span>
+<span class="sd">    c_n3_: float</span>
+<span class="sd">        Classification complexity measure N3 (C^N3). Category: Neighborhood Feature</span>
+<span class="sd">    c_n4_: float</span>
+<span class="sd">        Classification complexity measure N4 (C^N4). Category: Neighborhood Feature</span>
+<span class="sd">    c_t1_: float</span>
+<span class="sd">        Classification complexity measure T1 (C^T1). Category: Neighborhood Feature</span>
+<span class="sd">    c_lsc_: float</span>
+<span class="sd">        Classification complexity measure LSC (C^LSC). Category: Neighborhood Feature</span>
+<span class="sd">    c_c1_: float</span>
+<span class="sd">        Classification complexity measure C1 (C^C1). Category: Class Imbalance Feature</span>
+<span class="sd">    c_c2_: float</span>
+<span class="sd">        Classification complexity measure C2 (C^C2). Category: Class Imbalance Feature</span>
+<span class="sd">    c_cls_coef_: float</span>
+<span class="sd">        Classification complexity measure ClsCoef (C^ClsCoef). Category: Network-based Feature</span>
+<span class="sd">    c_density_: float</span>
+<span class="sd">        Classification complexity measure Density (C^Density). Category: Network-based Feature</span>
+<span class="sd">    c_hub_: float</span>
+<span class="sd">        Mean of classification complexity measure Hubs (C^Hubs). Category: Network-based Feature</span>
+<span class="sd">    min_point_: float</span>
+<span class="sd">        Minimum of points_ (N^points_min)</span>
+<span class="sd">    min_area_: float</span>
+<span class="sd">        Minimum of areas_ (Area^alpha-hull_min)</span>
+<span class="sd">    min_density_: float</span>
+<span class="sd">        Minimum of densities_ (Density^alpha-hull_min)</span>
+<span class="sd">    min_clumpiness_: float</span>
+<span class="sd">        Minimum of clumpinesses_ (Clumpiness_min)</span>
+<span class="sd">    min_skew_: float</span>
+<span class="sd">        Minimum of skews_ (Skeq_min)</span>
+<span class="sd">    min_sparse_: float</span>
+<span class="sd">        Minimum of sparses (Sparse_min)</span>
+<span class="sd">    min_outlier_: float</span>
+<span class="sd">        Minimum of outliers_ (Outlier_min)</span>
+<span class="sd">    min_convex_: float</span>
+<span class="sd">        Minimum of convexes_ (Convex_min)</span>
+<span class="sd">    min_skinny_: float</span>
+<span class="sd">        Minimum of skinnies (Skinny_min)</span>
+<span class="sd">    min_stringy_: float</span>
+<span class="sd">        Minimum of stringies_ (Stringy_min)</span>
+<span class="sd">    min_monotonic_: float</span>
+<span class="sd">        Minimum of monotonics (Monotonic_min)</span>
+<span class="sd">    min_data_alpha_centroid_diff_: float</span>
+<span class="sd">        Minimum of data_alpha_centroid_diffs_ (ConvexDiff^alpha-hull_min)</span>
+<span class="sd">    min_data_convex_centroid_diff_: float</span>
+<span class="sd">        Minimum of data_convex_centroid_diffs_ (ConvexDiff^convex_min)</span>
+<span class="sd">    min_kurtosis_: float</span>
+<span class="sd">        Minimum of kurtosises_ (Kurtosis_min)</span>
+<span class="sd">    min_distribution_overlap_: float</span>
+<span class="sd">        Minimum of distribution_overlaps_ (DistributionOverlap_min)</span>
+<span class="sd">    min_distribution_distance_: float</span>
+<span class="sd">        Minimum of distribution_distances_ (DistributionDistance_min)</span>
+<span class="sd">    max_point_: float</span>
+<span class="sd">        Maximum of points_ (N^points_max)</span>
+<span class="sd">    max_area_: float</span>
+<span class="sd">        Maximum of areas_ (Area^alpha-hull_max)</span>
+<span class="sd">    max_density_: float</span>
+<span class="sd">        Maximum of densities_ (Density^alpha-hull_max)</span>
+<span class="sd">    max_clumpiness_: float</span>
+<span class="sd">        Maximum of clumpinesses_ (Clumpiness_max)</span>
+<span class="sd">    max_skew_: float</span>
+<span class="sd">        Maximum of skews_ (Skeq_max)</span>
+<span class="sd">    max_sparse_: float</span>
+<span class="sd">        Maximum of sparses (Sparse_max)</span>
+<span class="sd">    max_outlier_: float</span>
+<span class="sd">        Maximum of outliers_ (Outlier_max)</span>
+<span class="sd">    max_convex_: float</span>
+<span class="sd">        Maximum of convexes_ (Convex_max)</span>
+<span class="sd">    max_skinny_: float</span>
+<span class="sd">        Maximum of skinnies (Skinny_max)</span>
+<span class="sd">    max_stringy_: float</span>
+<span class="sd">        Maximum of stringies_ (Stringy_max)</span>
+<span class="sd">    max_monotonic_: float</span>
+<span class="sd">        Maximum of monotonics (Monotonic_max)</span>
+<span class="sd">    max_data_alpha_centroid_diff_: float</span>
+<span class="sd">        Maximum of data_alpha_centroid_diffs_ (ConvexDiff^alpha-hull_max)</span>
+<span class="sd">    max_data_convex_centroid_diff_: float</span>
+<span class="sd">        Maximum of data_convex_centroid_diffs_ (ConvexDiff^convex_max)</span>
+<span class="sd">    max_kurtosis_: float</span>
+<span class="sd">        Maximum of kurtosises_ (Kurtosis_max)</span>
+<span class="sd">    max_distribution_overlap_: float</span>
+<span class="sd">        Maximum of distribution_overlaps_ (DistributionOverlap_max)</span>
+<span class="sd">    max_distribution_distance_: float</span>
+<span class="sd">        Maximum of distribution_distances_ (DistributionDistance_max)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hist_measures_n_repeats</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hist_n_repeats</span> <span class="o">=</span> <span class="n">hist_measures_n_repeats</span>
+
+<div class="viewcode-block" id="MulticlassScatterFeatures.fit">
+<a class="viewcode-back" href="../../multiclass_scatterplot_features.html#multiclass_scatterplot_features.multiclass_scatterplot_features_.MulticlassScatterFeatures.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">axis_limits</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit the model with X and y.</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X: {array-like, sparse matrix} of shape (n_samples, n_features)</span>
+<span class="sd">            Training data, where n_samples is the number of samples and n_features is the number of features. Currently, n_features is assumed to be n_features=2. The other cases are not tested.</span>
+<span class="sd">        y: array-like of shape (n_samples, )</span>
+<span class="sd">            Class labels.</span>
+<span class="sd">        axis_limits: array-like with shape (2, 2) or None (default: None)</span>
+<span class="sd">            x and y-axes limits. The array row and col correspond to (x, y), (min, max), repectively.</span>
+<span class="sd">            distribution_consistency function assumes X is in ranges of these limits.</span>
+<span class="sd">            If None, [[min of X[0, :], max of X[0, :]], [min of X[1, :], max of X[1, :]] is used.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">        ----------</span>
+<span class="sd">        self: object</span>
+<span class="sd">            Returns the instance itself.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_uniq_labels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">points_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">points_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;too small points in a class&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fit_within_class_factors</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">axis_limits</span><span class="o">=</span><span class="n">axis_limits</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fit_between_class_factors</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">axis_limits</span><span class="o">=</span><span class="n">axis_limits</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fit_classif_complexity_measures</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">axis_limits</span><span class="o">=</span><span class="n">axis_limits</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fit_within_class_factors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">axis_limits</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">axis_limits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># first row: xaxis_lim, second row: yaxis_lim, ...</span>
+            <span class="n">axis_limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)))</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">axis_range</span> <span class="o">=</span> <span class="n">axis_limits</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">axis_limits</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># handle zeros in scale</span>
+        <span class="n">axis_range</span><span class="p">[</span><span class="n">axis_range</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># scale positions by limits. i.e., coordinates bounded in [0, 1]</span>
+        <span class="n">_X</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">-</span> <span class="n">axis_limits</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">axis_range</span>
+
+        <span class="n">scags</span> <span class="o">=</span> <span class="p">[</span><span class="n">Scagnostics</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">_X</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">label</span><span class="p">])</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uniq_labels</span><span class="p">]</span>
+        <span class="c1"># save hulls for _fit_between_class_factors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">_alpha_hull</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">_convex_hull</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">]</span>
+
+        <span class="c1"># 1. scale related</span>
+        <span class="c1"># self.points_  # computed alredy when fit called</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">areas_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">_alpha_hull</span><span class="o">.</span><span class="n">area</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">areas_</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">areas_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e-30</span>
+
+        <span class="c1"># 2. point distance related</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">densities_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">points_</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">areas_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clumpinesses_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">clumpy_</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skews_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">skew_</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparses_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">sparse_</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])</span>
+        <span class="c1"># self.striates_ = np.array([s.striate_ for s in scags])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outliers_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">outlying_</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])</span>
+
+        <span class="c1"># 3. shape related</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">convexes_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">convex_</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skinnies_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">skinny_</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stringies_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">stringy_</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monotonics_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">monotonic_</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])</span>
+
+        <span class="c1"># 4. position related</span>
+        <span class="n">centroids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">_X</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])</span>
+        <span class="n">a_centroids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">*</span><span class="n">s</span><span class="o">.</span><span class="n">_alpha_hull</span><span class="o">.</span><span class="n">centroid</span><span class="o">.</span><span class="n">xy</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">c_centroids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">*</span><span class="n">s</span><span class="o">.</span><span class="n">_convex_hull</span><span class="o">.</span><span class="n">centroid</span><span class="o">.</span><span class="n">xy</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">])[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_alpha_centroid_diffs_</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">centroids</span> <span class="o">-</span> <span class="n">a_centroids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_convex_centroid_diffs_</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">centroids</span> <span class="o">-</span> <span class="n">c_centroids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># non-gaussianity measures from &quot;Independent component analysis: algorithms and applications&quot;</span>
+        <span class="c1"># NOTE: consider scaling? (right now simply taking sum)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kurtosises_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
+            <span class="p">[(</span><span class="n">s</span><span class="o">.</span><span class="n">_X</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">((</span><span class="n">s</span><span class="o">.</span><span class="n">_X</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># other non-gaussinanity inspired by &quot;Independent component analysis: algorithms and applications&quot;</span>
+        <span class="c1"># NOTE: current implementation of wasserstein_distances is too slow and excluded</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distribution_overlaps_</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distribution_distances_</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># self.wasserstein_distances_ = None</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hist_n_repeats</span><span class="p">):</span>
+            <span class="c1"># generation of points following gaussian distribution</span>
+            <span class="n">normals</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span>
+                    <span class="n">s</span><span class="o">.</span><span class="n">_X</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">_X</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">s</span><span class="o">.</span><span class="n">_X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scags</span>
+            <span class="p">]</span>
+            <span class="n">bins</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">s</span><span class="o">.</span><span class="n">_X</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">nor</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])),</span> <span class="n">bins</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">nor</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">scags</span><span class="p">,</span> <span class="n">normals</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">normal_hists</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">histogramdd</span><span class="p">(</span><span class="n">nor</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">b</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">nor</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">normals</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">X_hists</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">histogramdd</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">_X</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">b</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">scags</span><span class="p">,</span> <span class="n">bins</span><span class="p">)]</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution_overlaps_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distribution_overlaps_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">normal_hists</span><span class="p">)))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution_distances_</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distribution_distances_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">normal_hists</span><span class="p">)))</span>
+            <span class="c1"># if self.wasserstein_distances_ is None:</span>
+            <span class="c1">#     self.wasserstein_distances_ = np.zeros((len(normal_hists)))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">distribution_overlaps_</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">nh</span><span class="p">,</span> <span class="n">xh</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">nh</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">nh</span><span class="p">,</span> <span class="n">xh</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">normal_hists</span><span class="p">,</span> <span class="n">X_hists</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="c1"># NOTE: This measure is often referred as the Bhattacharyya distance but actually the Hellinger distance</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">distribution_distances_</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                        <span class="mi">1</span>
+                        <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">nh</span> <span class="o">*</span> <span class="n">xh</span><span class="p">))</span>
+                        <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">nh</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="n">xh</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="n">nh</span><span class="o">.</span><span class="n">size</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">nh</span><span class="p">,</span> <span class="n">xh</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">normal_hists</span><span class="p">,</span> <span class="n">X_hists</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># to normalize wasserstein distance generate random distribution (to avoid influence from data size)</span>
+            <span class="c1"># randoms = [np.random.rand(*s._X.shape) for s in scags]</span>
+            <span class="c1"># self.wasserstein_distances_ += np.array(</span>
+            <span class="c1">#     [</span>
+            <span class="c1">#         wasserstein_distance_nd(s._X, nor) / wasserstein_distance_nd(r, nor)</span>
+            <span class="c1">#         for s, nor, r in zip(scags, normals, randoms)</span>
+            <span class="c1">#     ]</span>
+            <span class="c1"># )</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distribution_overlaps_</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hist_n_repeats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distribution_distances_</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hist_n_repeats</span>
+        <span class="c1"># self.wasserstein_distances_ /= self._hist_n_repeats</span>
+
+        <span class="c1"># summarize measures</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_point_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">points_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_area_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">areas_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_density_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">densities_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_clumpiness_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clumpinesses_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_skew_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">skews_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_sparse_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparses_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="c1"># self.min_striate_ = self.striates_.min()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_outlier_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outliers_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_convex_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convexes_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_skinny_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">skinnies_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_stringy_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stringies_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_monotonic_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">monotonics_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_data_alpha_centroid_diff_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_alpha_centroid_diffs_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_data_convex_centroid_diff_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_convex_centroid_diffs_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_kurtosis_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kurtosises_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_distribution_overlap_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution_overlaps_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_distribution_distance_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution_distances_</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="c1"># self.min_wasserstein_distance_ = self.wasserstein_distances_.min()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_point_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">points_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_area_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">areas_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_density_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">densities_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_clumpiness_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clumpinesses_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_skew_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">skews_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_sparse_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparses_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="c1"># self.max_striate_ = self.striates_.max()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_outlier_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outliers_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_convex_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convexes_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_skinny_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">skinnies_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_stringy_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stringies_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_monotonic_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">monotonics_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_data_alpha_centroid_diff_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_alpha_centroid_diffs_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_data_convex_centroid_diff_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_convex_centroid_diffs_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_kurtosis_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kurtosises_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_distribution_overlap_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution_overlaps_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_distribution_distance_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distribution_distances_</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="c1"># self.max_wasserstein_distance_ = self.wasserstein_distances_.max()</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fit_between_class_factors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">axis_limits</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">axis_limits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># first row: xaxis_lim, second row: yaxis_lim, ...</span>
+            <span class="n">axis_limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)))</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="c1"># 1. scale related</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">points_classes_ratio_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uniq_labels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_point_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">points_</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_area_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">areas_</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+        <span class="c1"># 2. point distance related</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_density_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">densities_</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_skew_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">skews_</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_sparse_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparses_</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">equidistant_</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="n">counts</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">X_a</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">label</span><span class="p">]</span>
+            <span class="n">X_b</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">y</span> <span class="o">!=</span> <span class="n">label</span><span class="p">]</span>
+            <span class="n">dists</span> <span class="o">=</span> <span class="n">pairwise_distances</span><span class="p">(</span><span class="n">X_a</span><span class="p">,</span> <span class="n">X_b</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">equidistant_</span> <span class="o">+=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="p">(</span><span class="n">dists</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">dists</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                    <span class="o">+</span> <span class="p">(</span><span class="n">dists</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">dists</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                <span class="p">)</span>
+                <span class="o">/</span> <span class="mi">2</span>
+                <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>  <span class="c1"># to avoid zero div</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">equidistant_</span> <span class="o">/=</span> <span class="n">counts</span>
+
+        <span class="c1"># NOTE: there might be a better design to capture split</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">split_</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">)):</span>
+                <span class="n">counts</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">diff_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="n">diff_j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">split_i</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">split_j</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="c1"># if split, diff shape should be multipolygon</span>
+                <span class="k">if</span> <span class="n">diff_i</span><span class="o">.</span><span class="n">geom_type</span> <span class="o">==</span> <span class="s2">&quot;MultiPolygon&quot;</span><span class="p">:</span>
+                    <span class="c1"># further adding condition to say split (at least 10% of area)</span>
+                    <span class="n">split_hull_area_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="n">g</span><span class="o">.</span><span class="n">area</span> <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">area</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">area</span> <span class="o">&gt;=</span> <span class="mf">0.1</span> <span class="k">else</span> <span class="mi">0</span>
+                            <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">diff_i</span><span class="o">.</span><span class="n">geoms</span>
+                        <span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">split_i</span> <span class="o">=</span> <span class="n">split_hull_area_i</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">area</span>
+                <span class="k">if</span> <span class="n">diff_j</span><span class="o">.</span><span class="n">geom_type</span> <span class="o">==</span> <span class="s2">&quot;MultiPolygon&quot;</span><span class="p">:</span>
+                    <span class="c1"># further adding condition to say split (at least 10% of area)</span>
+                    <span class="n">split_hull_area_j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="n">g</span><span class="o">.</span><span class="n">area</span> <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">area</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">area</span> <span class="o">&gt;=</span> <span class="mf">0.1</span> <span class="k">else</span> <span class="mi">0</span>
+                            <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">diff_j</span><span class="o">.</span><span class="n">geoms</span>
+                        <span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">split_j</span> <span class="o">=</span> <span class="n">split_hull_area_j</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">area</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">split_</span> <span class="o">+=</span> <span class="nb">max</span><span class="p">(</span><span class="n">split_i</span><span class="p">,</span> <span class="n">split_j</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">split_</span> <span class="o">/=</span> <span class="n">counts</span>
+
+        <span class="c1"># 3. shape related</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_convex_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convexes_</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_skinny_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">skinnies_</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_stringy_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stringies_</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_monotonic_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">monotonics_</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+        <span class="c1"># 4. position related</span>
+        <span class="c1"># NOTE: there might be better design of this measure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inner_occlusion_ratios_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span><span class="p">)):</span>
+            <span class="n">combined_region</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">combined_region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">combined_region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span><span class="p">[</span><span class="n">b</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">combined_region</span> <span class="o">=</span> <span class="n">combined_region</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span><span class="p">[</span><span class="n">b</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inner_occlusion_ratios_</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span><span class="p">[</span><span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">combined_region</span><span class="p">)</span><span class="o">.</span><span class="n">area</span>
+            <span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span>
+                <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span><span class="p">[</span><span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="n">area</span><span class="p">,</span> <span class="n">combined_region</span><span class="o">.</span><span class="n">area</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inner_occlusion_ratio_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inner_occlusion_ratios_</span><span class="p">)</span>
+
+        <span class="c1"># # This is previous design of inner_occulusion_ratio</span>
+        <span class="c1"># self.inner_occlusion_ratio_ = 0</span>
+        <span class="c1"># counts = 0</span>
+        <span class="c1"># for i in range(len(self._convex_hulls)):</span>
+        <span class="c1">#     for j in range(i, len(self._convex_hulls)):</span>
+        <span class="c1">#         counts += 1</span>
+        <span class="c1">#         self.inner_occlusion_ratio_ += self._convex_hulls[i].intersection(</span>
+        <span class="c1">#             self._convex_hulls[j]</span>
+        <span class="c1">#         ).area / max(</span>
+        <span class="c1">#             min(self._convex_hulls[i].area, self._convex_hulls[j].area),</span>
+        <span class="c1">#             np.finfo(float).eps,</span>
+        <span class="c1">#         )</span>
+        <span class="c1"># self.inner_occlusion_ratio_ /= counts</span>
+
+        <span class="c1"># class separation related_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gong_035_dir_cp_t0_</span> <span class="o">=</span> <span class="n">sepme</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">class_purity_fn_kwds</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;target_labels&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">]}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gong_035_dir_cp_t1_</span> <span class="o">=</span> <span class="n">sepme</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">class_purity_fn_kwds</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;target_labels&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_consistency_</span> <span class="o">=</span> <span class="n">distance_consistency</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">density_aware_distance_consistency_</span> <span class="o">=</span> <span class="n">density_aware_distance_consistency</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">y</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">density_aware_knng_</span> <span class="o">=</span> <span class="n">density_aware_knng</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_overlap_</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">alpha_overlap_</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alpha_hulls</span><span class="p">[</span><span class="n">j</span><span class="p">])</span><span class="o">.</span><span class="n">area</span>
+                <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">convex_overlap_</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">convex_overlap_</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_convex_hulls</span><span class="p">[</span><span class="n">j</span><span class="p">])</span><span class="o">.</span><span class="n">area</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fit_classif_complexity_measures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">axis_limits</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">axis_limits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># first row: xaxis_lim, second row: yaxis_lim, ...</span>
+            <span class="n">axis_limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)))</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">mfec</span> <span class="o">=</span> <span class="n">MFEComplexity</span><span class="p">()</span>
+
+        <span class="c1"># precomputations to save time</span>
+        <span class="n">adj_graph</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">precompute_adjacency_graph</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="s2">&quot;adj_graph&quot;</span><span class="p">]</span>
+        <span class="n">precom_comp</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">precompute_complexity</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="c1"># classes = precom_comp[&quot;classes&quot;]</span>
+        <span class="n">ovo_comb</span> <span class="o">=</span> <span class="n">precom_comp</span><span class="p">[</span><span class="s2">&quot;ovo_comb&quot;</span><span class="p">]</span>
+        <span class="n">cls_inds</span> <span class="o">=</span> <span class="n">precom_comp</span><span class="p">[</span><span class="s2">&quot;cls_inds&quot;</span><span class="p">]</span>
+        <span class="n">class_freqs</span> <span class="o">=</span> <span class="n">precom_comp</span><span class="p">[</span><span class="s2">&quot;class_freqs&quot;</span><span class="p">]</span>
+        <span class="n">svc_pipeline</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">precompute_complexity_svm</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)[</span><span class="s2">&quot;svc_pipeline&quot;</span><span class="p">]</span>
+        <span class="n">precom_norm_dist</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">precompute_norm_dist_mat</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">N_scaled</span> <span class="o">=</span> <span class="n">precom_norm_dist</span><span class="p">[</span><span class="s2">&quot;N_scaled&quot;</span><span class="p">]</span>
+        <span class="n">norm_dist_mat</span> <span class="o">=</span> <span class="n">precom_norm_dist</span><span class="p">[</span><span class="s2">&quot;norm_dist_mat&quot;</span><span class="p">]</span>
+        <span class="n">orig_dist_mat_min</span> <span class="o">=</span> <span class="n">precom_norm_dist</span><span class="p">[</span><span class="s2">&quot;orig_dist_mat_min&quot;</span><span class="p">]</span>
+        <span class="n">orig_dist_mat_ptp</span> <span class="o">=</span> <span class="n">precom_norm_dist</span><span class="p">[</span><span class="s2">&quot;orig_dist_mat_ptp&quot;</span><span class="p">]</span>
+
+        <span class="c1"># 1. Axis features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_f1v_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_f1v</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ovo_comb</span><span class="o">=</span><span class="n">ovo_comb</span><span class="p">,</span> <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span> <span class="n">class_freqs</span><span class="o">=</span><span class="n">class_freqs</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_f2_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_f2</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ovo_comb</span><span class="o">=</span><span class="n">ovo_comb</span><span class="p">,</span> <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_f3_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_f3</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ovo_comb</span><span class="o">=</span><span class="n">ovo_comb</span><span class="p">,</span> <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span> <span class="n">class_freqs</span><span class="o">=</span><span class="n">class_freqs</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_f4_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_f4</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ovo_comb</span><span class="o">=</span><span class="n">ovo_comb</span><span class="p">,</span> <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span> <span class="n">class_freqs</span><span class="o">=</span><span class="n">class_freqs</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># 2. Linearity features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_l1_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_l1</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">,</span>
+            <span class="n">ovo_comb</span><span class="o">=</span><span class="n">ovo_comb</span><span class="p">,</span>
+            <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span>
+            <span class="n">class_freqs</span><span class="o">=</span><span class="n">class_freqs</span><span class="p">,</span>
+            <span class="n">svc_pipeline</span><span class="o">=</span><span class="n">svc_pipeline</span><span class="p">,</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_l2_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_l2</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ovo_comb</span><span class="o">=</span><span class="n">ovo_comb</span><span class="p">,</span> <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span> <span class="n">svc_pipeline</span><span class="o">=</span><span class="n">svc_pipeline</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_l3_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_l3</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ovo_comb</span><span class="o">=</span><span class="n">ovo_comb</span><span class="p">,</span> <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span> <span class="n">svc_pipeline</span><span class="o">=</span><span class="n">svc_pipeline</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># 3. Neighborhood features</span>
+        <span class="c1"># self.c_n1_ = mfec.ft_n1(X, y, N_scaled=N_scaled, norm_dist_mat=norm_dist_mat)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_n1_</span> <span class="o">=</span> <span class="n">_ft_n1</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">norm_dist_mat</span><span class="o">=</span><span class="n">norm_dist_mat</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_n2_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_n2</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">,</span>
+            <span class="n">class_freqs</span><span class="o">=</span><span class="n">class_freqs</span><span class="p">,</span>
+            <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span>
+            <span class="n">N_scaled</span><span class="o">=</span><span class="n">N_scaled</span><span class="p">,</span>
+            <span class="n">norm_dist_mat</span><span class="o">=</span><span class="n">norm_dist_mat</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_n3_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_n3</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">N_scaled</span><span class="o">=</span><span class="n">N_scaled</span><span class="p">,</span> <span class="n">norm_dist_mat</span><span class="o">=</span><span class="n">norm_dist_mat</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_n4_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_n4</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">,</span>
+            <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span>
+            <span class="n">N_scaled</span><span class="o">=</span><span class="n">N_scaled</span><span class="p">,</span>
+            <span class="n">norm_dist_mat</span><span class="o">=</span><span class="n">norm_dist_mat</span><span class="p">,</span>
+            <span class="n">orig_dist_mat_min</span><span class="o">=</span><span class="n">orig_dist_mat_min</span><span class="p">,</span>
+            <span class="n">orig_dist_mat_ptp</span><span class="o">=</span><span class="n">orig_dist_mat_ptp</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_t1_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_t1</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">,</span>
+            <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span>
+            <span class="n">N_scaled</span><span class="o">=</span><span class="n">N_scaled</span><span class="p">,</span>
+            <span class="n">norm_dist_mat</span><span class="o">=</span><span class="n">norm_dist_mat</span><span class="p">,</span>
+            <span class="n">orig_dist_mat_min</span><span class="o">=</span><span class="n">orig_dist_mat_min</span><span class="p">,</span>
+            <span class="n">orig_dist_mat_ptp</span><span class="o">=</span><span class="n">orig_dist_mat_ptp</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># self.c_lsc_ = mfec.ft_lsc(</span>
+        <span class="c1">#     X, y, cls_inds=cls_inds, N_scaled=N_scaled, norm_dist_mat=norm_dist_mat</span>
+        <span class="c1"># )</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_lsc_</span> <span class="o">=</span> <span class="n">_ft_lsc</span><span class="p">(</span><span class="n">mfec</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span> <span class="n">norm_dist_mat</span><span class="o">=</span><span class="n">norm_dist_mat</span><span class="p">)</span>
+
+        <span class="c1"># 4. Class imbalance features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_c1_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_c1</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">class_freqs</span><span class="o">=</span><span class="n">class_freqs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_c2_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_c2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">class_freqs</span><span class="o">=</span><span class="n">class_freqs</span><span class="p">)</span>
+
+        <span class="c1"># 5. Network-based features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_cls_coef_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_cls_coef</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">,</span>
+            <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span>
+            <span class="n">norm_dist_mat</span><span class="o">=</span><span class="n">norm_dist_mat</span><span class="p">,</span>
+            <span class="n">adj_graph</span><span class="o">=</span><span class="n">adj_graph</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_density_</span> <span class="o">=</span> <span class="n">mfec</span><span class="o">.</span><span class="n">ft_density</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">,</span>
+            <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span><span class="p">,</span>
+            <span class="n">norm_dist_mat</span><span class="o">=</span><span class="n">norm_dist_mat</span><span class="p">,</span>
+            <span class="n">adj_graph</span><span class="o">=</span><span class="n">adj_graph</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># self.c_hub_ = mfec.ft_hubs(</span>
+        <span class="c1">#     X,</span>
+        <span class="c1">#     y,</span>
+        <span class="c1">#     n_jobs=-1,</span>
+        <span class="c1">#     cls_inds=cls_inds,</span>
+        <span class="c1">#     norm_dist_mat=norm_dist_mat,</span>
+        <span class="c1">#     adj_graph=adj_graph,</span>
+        <span class="c1"># ).mean()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_hub_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">adj_graph</span><span class="o">.</span><span class="n">hub_score</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ft_n1</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">norm_dist_mat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Modified version from PyMFE. PyMFE has np.asfarrray, which is deprecated by Numpy 2.0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_norm_dist_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">norm_dist_mat</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">mst</span> <span class="o">=</span> <span class="n">minimum_spanning_tree</span><span class="p">(</span><span class="n">csgraph</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">_norm_dist_mat</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">node_id_i</span><span class="p">,</span> <span class="n">node_id_j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">mst</span><span class="p">)</span>
+
+    <span class="n">which_have_diff_cls</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">node_id_i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">y</span><span class="p">[</span><span class="n">node_id_j</span><span class="p">]</span>
+
+    <span class="n">borderline_inst_num</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">node_id_i</span><span class="p">[</span><span class="n">which_have_diff_cls</span><span class="p">],</span>
+                <span class="n">node_id_j</span><span class="p">[</span><span class="n">which_have_diff_cls</span><span class="p">],</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="n">n1</span> <span class="o">=</span> <span class="n">borderline_inst_num</span> <span class="o">/</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="k">return</span> <span class="n">n1</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ft_lsc</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cls_inds</span><span class="p">,</span> <span class="n">norm_dist_mat</span><span class="p">,</span> <span class="n">nearest_enemy_dist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Modified version from PyMFE. PyMFE has np.asfarrray, which is deprecated by Numpy 2.0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_norm_dist_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">norm_dist_mat</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">nearest_enemy_dist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">nearest_enemy_dist</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_calc_nearest_enemies</span><span class="p">(</span>
+            <span class="n">norm_dist_mat</span><span class="o">=</span><span class="n">_norm_dist_mat</span><span class="p">,</span> <span class="n">cls_inds</span><span class="o">=</span><span class="n">cls_inds</span>
+        <span class="p">)</span>
+
+    <span class="n">lsc</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">_norm_dist_mat</span> <span class="o">&lt;</span> <span class="n">nearest_enemy_dist</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">lsc</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">multiclass-scatterplot-features</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../multiclass_scatterplot_features.html">multiclass_scatterplot_features package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Author.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

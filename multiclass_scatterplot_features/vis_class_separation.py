@@ -3,8 +3,8 @@ import numpy as np
 from scipy.linalg import norm
 from sklearn.neighbors import BallTree, kneighbors_graph
 
-from scatter_data_generator.measure.graph import gamma_observable_neighbors
-from scatter_data_generator.measure.class_purity import class_proportion
+from multiclass_scatterplot_features.graph import gamma_observable_neighbors
+from multiclass_scatterplot_features.class_purity import class_proportion
 
 
 def sepme(
@@ -77,11 +77,9 @@ def distance_consistency(X, y):
 
 def distribution_consistency(X, y, sigma=0.05, resolution=100, axis_limits=None):
     """
-    Sips et al., "Selecting good views of high-dimensional data using class consistency", CGF 2009.
-    """
-    """
     Distribution_consistency (DC) implementaiton based on
     - Sips et al., "Selecting good views of high-dimensional data using class consistency", CGF 2009.
+
     Parameters:
     ----------
     X: {array-like, sparse matrix} of shape (n_samples, n_features)
@@ -92,11 +90,11 @@ def distribution_consistency(X, y, sigma=0.05, resolution=100, axis_limits=None)
     sigma: float (default: 0.05)
         The kernel width parameter.
     resolution: int (default: 100)
-        Resolution of grids used to create regions to compute entropy. 
+        Resolution of grids used to create regions to compute entropy.
         For example, 100 makes 100x100 grids.
     axis_limits: array-like with shape (2, 2) or None (default: None)
-        x and y-axes limits. The array row and col correspond to (x, y), (min, max), repectively. 
-        distribution_consistency function assumes X is in ranges of these limits. 
+        x and y-axes limits. The array row and col correspond to (x, y), (min, max), repectively.
+        distribution_consistency function assumes X is in ranges of these limits.
         If None, automatically set as [[min of X[0, :], max of X[0, :]], [min of X[1, :], max of X[1, :]].
     Returns:
     ----------
@@ -149,6 +147,7 @@ def density_aware_distance_consistency(X, y, summary_measure=True):
     - Wang et al., "A perception-driven approach to supervised dimensionality reduction for visualization", TVCG 2018.
     Note: This paper's DSC doesn't look precisely following the original DSC (i.e., something wrong in Eq 6).
     But, it does not influence on the implmentation of density-aware DSC (i.e., we follow Eq. 9).
+
     Parameters:
     ----------
     X: {array-like, sparse matrix} of shape (n_samples, n_features)
@@ -183,6 +182,7 @@ def density_aware_knng(X, y, summary_measure=True):
     """
     Density-aware KNNG implementation based on:
     - Wang et al., "A perception-driven approach to supervised dimensionality reduction for visualization", TVCG 2018.
+
     Parameters:
     ----------
     X: {array-like, sparse matrix} of shape (n_samples, n_features)
