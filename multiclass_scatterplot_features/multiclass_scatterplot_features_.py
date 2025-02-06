@@ -507,14 +507,14 @@ class MulticlassScatterFeatures:
 
         self.alpha_overlap_ = 0
         for i in range(len(self._alpha_hulls)):
-            for j in range(i, len(self._alpha_hulls)):
+            for j in range(i + 1, len(self._alpha_hulls)):
                 self.alpha_overlap_ += (
                     self._alpha_hulls[i].intersection(self._alpha_hulls[j]).area
                 )
 
         self.convex_overlap_ = 0
         for i in range(len(self._convex_hulls)):
-            for j in range(i, len(self._convex_hulls)):
+            for j in range(i + 1, len(self._convex_hulls)):
                 self.convex_overlap_ += (
                     self._convex_hulls[i].intersection(self._convex_hulls[j]).area
                 )
