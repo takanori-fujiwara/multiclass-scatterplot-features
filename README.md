@@ -22,7 +22,7 @@ About
 Requirements
 -----
 * Python3
-* Note: Tested on macOS Sonoma.
+* Note: Tested on macOS Sequoia.
 ******
 
 Setup (multiclass-scatterplot-features)
@@ -35,7 +35,7 @@ Setup (multiclass-scatterplot-features)
 
 Usage (multiclass-scatterplot-features)
 -----
-* Import installed modules from python (e.g., `from multiclass_scatterplot_features import MulticlassScatterFeatures`). See sample.py for examples.
+* Import installed modules from python (e.g., `from multiclass_scatterplot_features import MulticlassScatterFeatures`). See `sample.py` for examples (to run sample.py, install matplotlib with `pip3 install matplotlib`)
 * Detailed documentations of functions, classes, methods can be found in each corresponding python script as well as `doc/index.html`.
 ******
 
